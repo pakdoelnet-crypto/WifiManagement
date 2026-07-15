@@ -18,6 +18,41 @@ class InvoiceController extends Controller
             abort(403, 'Unauthorized access to invoices.');
         }
 
+        // Fail-safe auto-generation: Ensure all active customers have current month's invoice
+        $periode = date('Ym');
+        $year = substr($periode, 0, 4);
+        $month = substr($periode, 4, 2);
+        
+        $activeCustomers = Customer::where('status', 'active')
+            ->whereNotNull('package_id')
+            ->get();
+
+        foreach ($activeCustomers as $customer) {
+            $exists = Invoice::where('customer_id', $customer->id)
+                ->where('periode', $periode)
+                ->exists();
+
+            if (!$exists) {
+                $package = $customer->package;
+                if ($package) {
+                    $invoiceNumber = 'INV-' . $periode . '-' . str_pad($customer->id, 4, '0', STR_PAD_LEFT);
+                    $dueDate = date('Y-m-d', strtotime("$year-$month-10"));
+
+                    Invoice::create([
+                        'customer_id' => $customer->id,
+                        'invoice_number' => $invoiceNumber,
+                        'amount' => $package->price,
+                        'periode' => $periode,
+                        'penalty_amount' => 0,
+                        'discount_amount' => 0,
+                        'total_amount' => $package->price,
+                        'due_date' => $dueDate,
+                        'status' => 'unpaid',
+                    ]);
+                }
+            }
+        }
+
         $query = Invoice::with(['customer.package', 'payment']);
 
         // Search: PPPoE username or Customer name
