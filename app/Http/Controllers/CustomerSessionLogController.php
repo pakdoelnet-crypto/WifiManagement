@@ -17,8 +17,7 @@ class CustomerSessionLogController extends Controller
             abort(403, 'Unauthorized access to customer connection history.');
         }
 
-        $query = CustomerSessionLog::with(['customer', 'router'])
-            ->where('event_type', 'login'); // Show login records because they contain duration/logout time
+        $query = CustomerSessionLog::with(['customer', 'router']);
 
         // Filter: Customer Name
         if ($request->filled('customer_id')) {

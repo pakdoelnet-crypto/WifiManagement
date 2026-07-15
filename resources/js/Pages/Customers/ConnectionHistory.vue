@@ -33,6 +33,7 @@ const routerId = ref(props.filters.router_id || '');
 const startDate = ref(props.filters.start_date || '');
 const endDate = ref(props.filters.end_date || '');
 const customerId = ref(props.filters.customer_id || '');
+const viewMode = ref('console'); // 'console' or 'table'
 
 const formatDateTime = (value) => {
     if (!value) return '-';
@@ -171,8 +172,121 @@ const clearFilters = () => {
                 </div>
             </div>
 
-            <!-- Connection Logs Table -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden">
+            <!-- View Mode Switcher -->
+            <div class="flex items-center justify-between">
+                <div class="flex bg-slate-900 border border-slate-800 p-1 rounded-xl">
+                    <button
+                        @click="viewMode = 'console'"
+                        :class="[
+                            viewMode === 'console'
+                                ? 'bg-indigo-600 text-white shadow-md'
+                                : 'text-slate-400 hover:text-white'
+                        ]"
+                        class="px-4 py-2 text-xs font-semibold rounded-lg transition"
+                    >
+                        Tampilan Log Konsol (Telegram Style)
+                    </button>
+                    <button
+                        @click="viewMode = 'table'"
+                        :class="[
+                            viewMode === 'table'
+                                ? 'bg-indigo-600 text-white shadow-md'
+                                : 'text-slate-400 hover:text-white'
+                        ]"
+                        class="px-4 py-2 text-xs font-semibold rounded-lg transition"
+                    >
+                        Tampilan Tabel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tampilan 1: Connection Logs Console (Telegram/MOMON Style) -->
+            <div v-if="viewMode === 'console'" class="bg-slate-950 border border-slate-900 rounded-2xl shadow-xl overflow-hidden p-6 font-mono">
+                <div class="flex items-center justify-between mb-4 border-b border-slate-900 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider">
+                            Live Connection Syslog Terminal
+                        </h3>
+                    </div>
+                    <span class="text-[10px] text-slate-500">FORMAT: Telegram Bot Style</span>
+                </div>
+                
+                <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                    <div
+                        v-for="log in logs.data"
+                        :key="log.id"
+                        class="p-4 rounded-xl border border-slate-900 bg-slate-900/30 relative hover:border-slate-800 transition"
+                    >
+                        <!-- Log Date -->
+                        <div class="absolute right-4 top-4 text-[10px] text-slate-500 font-sans">
+                            {{ formatDateTime(log.session_started_at) }}
+                        </div>
+                        
+                        <!-- Router Banner -->
+                        <div class="text-indigo-400 font-extrabold text-xs tracking-wider uppercase">
+                            === {{ log.router ? log.router.name : 'PAK DOEL.NET' }} ===
+                        </div>
+                        
+                        <!-- Event line -->
+                        <div class="mt-1.5 flex items-center gap-2 text-sm">
+                            <span class="text-slate-300 font-bold">&lt;pppoe-{{ log.pppoe_username }}&gt;:</span>
+                            
+                            <!-- Connected Status -->
+                            <span v-if="log.event_type === 'login'" class="text-emerald-400 font-black uppercase tracking-widest text-[11px] bg-emerald-950/40 px-2 py-0.5 rounded-md animate-pulse">
+                                connected
+                            </span>
+                            <!-- Disconnected Status -->
+                            <span v-else class="text-rose-500 font-black uppercase tracking-widest text-[11px] bg-rose-950/40 px-2 py-0.5 rounded-md">
+                                disconnected
+                            </span>
+                        </div>
+                        
+                        <!-- Info Footer -->
+                        <div class="mt-2 text-[10px] text-slate-500 flex flex-wrap items-center gap-x-4 gap-y-1 font-sans">
+                            <span class="flex items-center gap-1">
+                                <span class="text-slate-600">IP:</span> {{ log.ip_address || '-' }}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <span class="text-slate-600">Pelanggan:</span> {{ log.customer ? log.customer.name : 'Tidak Terdaftar' }}
+                            </span>
+                            <span v-if="log.event_type === 'logout' && log.duration_seconds !== null" class="flex items-center gap-1">
+                                <span class="text-slate-600">Durasi:</span> {{ formatDuration(log.duration_seconds) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div v-if="logs.data.length === 0" class="text-center py-12 text-slate-600 text-xs">
+                        Tidak ada log riwayat koneksi masuk.
+                    </div>
+                </div>
+
+                <!-- Pagination for Console Mode -->
+                <div v-if="logs.links.length > 3" class="mt-6 pt-4 border-t border-slate-900 flex items-center justify-between font-sans">
+                    <div class="text-xs text-slate-500">
+                        Menampilkan {{ logs.from || 0 }} sampai {{ logs.to || 0 }} dari {{ logs.total }} baris
+                    </div>
+                    <div class="flex space-x-1">
+                        <Component
+                            :is="link.url ? 'Link' : 'span'"
+                            v-for="(link, i) in logs.links"
+                            :key="i"
+                            :href="link.url"
+                            v-html="link.label"
+                            :class="[
+                                link.active
+                                    ? 'bg-indigo-600 text-white font-bold'
+                                    : 'bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white',
+                                !link.url ? 'opacity-40 cursor-not-allowed' : ''
+                            ]"
+                            class="px-3 py-1.5 text-xs rounded-xl shadow-sm transition"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tampilan 2: Connection Logs Table (Standard Mode) -->
+            <div v-if="viewMode === 'table'" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
