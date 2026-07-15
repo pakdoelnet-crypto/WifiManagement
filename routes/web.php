@@ -150,13 +150,35 @@ Route::get('/debug-connection', function() {
     $dbSessionsCount = \App\Models\PppActiveSession::count();
     $dbCustomersCount = \App\Models\Customer::count();
     
-    $schedulerLog = file_exists(storage_path('logs/scheduler.log')) ? tail_file(storage_path('logs/scheduler.log'), 20) : 'No scheduler log';
-    $laravelLog = file_exists(storage_path('logs/laravel.log')) ? tail_file(storage_path('logs/laravel.log'), 20) : 'No laravel log';
+    // Check Laravel queue jobs
+    $jobsCount = 0;
+    $failedJobsCount = 0;
+    try {
+        $jobsCount = \DB::table('jobs')->count();
+        $failedJobsCount = \DB::table('failed_jobs')->count();
+    } catch (\Exception $e) {
+        $jobsCount = $e->getMessage();
+    }
+
+    // Running PHP processes
+    $processes = [];
+    exec('ps aux | grep php', $processes);
+
+    // Scan log dir
+    $logDir = storage_path('logs');
+    $logFiles = file_exists($logDir) ? scandir($logDir) : [];
+    
+    $schedulerLog = file_exists(storage_path('logs/scheduler.log')) ? tail_file(storage_path('logs/scheduler.log'), 30) : 'No scheduler log';
+    $laravelLog = file_exists(storage_path('logs/laravel.log')) ? tail_file(storage_path('logs/laravel.log'), 30) : 'No laravel log';
 
     return response()->json([
         'routers' => $results,
         'db_active_sessions' => $dbSessionsCount,
         'db_customers' => $dbCustomersCount,
+        'jobs_count' => $jobsCount,
+        'failed_jobs_count' => $failedJobsCount,
+        'running_processes' => $processes,
+        'log_files' => $logFiles,
         'scheduler_log' => $schedulerLog,
         'laravel_log' => $laravelLog
     ]);
