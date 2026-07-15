@@ -133,10 +133,7 @@ class CustomerController extends Controller
 
         $this->customerService->importCustomer($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Pelanggan berhasil diimport dari MikroTik.'
-        ]);
+        return redirect()->back()->with('success', 'Pelanggan berhasil diimport dari MikroTik.');
     }
 
     public function media($type, $filename)
