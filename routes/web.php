@@ -185,8 +185,7 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
         return response()->json(['error' => 'Unauthorized'], 401);
     }
     $output = [];
-    exec('cd /var/www/pakdoelnet && git log -n 5 --oneline 2>&1', $output);
-    exec('cd /var/www/pakdoelnet && git status 2>&1', $output);
+    exec('sed -n "90,145p" /var/www/pakdoelnet/resources/js/Layouts/AuthenticatedLayout.vue 2>&1', $output);
     return response()->json([
         'success' => true,
         'output' => $output
