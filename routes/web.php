@@ -110,6 +110,8 @@ Route::middleware('auth')->group(function () {
     // Invoices Routes (can:invoices.view permission)
     Route::middleware('can:invoices.view')->group(function () {
         Route::get('/invoices', [\App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');
+        Route::post('/invoices/generate', [\App\Http\Controllers\InvoiceController::class, 'generate'])->name('invoices.generate');
+        Route::post('/invoices/{id}/pay', [\App\Http\Controllers\InvoiceController::class, 'pay'])->name('invoices.pay');
     });
 });
 

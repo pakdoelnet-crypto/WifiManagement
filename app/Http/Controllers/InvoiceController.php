@@ -4,14 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Models\Customer;
+use App\Models\Payment;
+use App\Services\CustomerService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class InvoiceController extends Controller
 {
-
     public function index(Request $request)
     {
+        // Check authorization (Super Admin, Owner, Admin, Customer Service, Kasir)
+        if (!auth()->user()->hasAnyRole(['Super Admin', 'Owner', 'Admin', 'Customer Service', 'Kasir'])) {
+            abort(403, 'Unauthorized access to invoices.');
+        }
+
         $query = Invoice::with(['customer.package', 'payment']);
 
         // Search: PPPoE username or Customer name
@@ -58,6 +64,120 @@ class InvoiceController extends Controller
             'customers' => $customers,
             'periodes' => $periodes,
             'filters' => $request->only(['search', 'customer_id', 'status', 'periode']),
+            'canManage' => auth()->user()->hasAnyRole(['Super Admin', 'Owner', 'Admin', 'Kasir']),
         ]);
+    }
+
+    /**
+     * Generate monthly invoices for all active customers.
+     */
+    public function generate(Request $request)
+    {
+        if (!auth()->user()->hasAnyRole(['Super Admin', 'Owner', 'Admin'])) {
+            abort(403, 'Unauthorized to generate invoices.');
+        }
+
+        $request->validate([
+            'periode' => ['required', 'string', 'size:6', 'regex:/^[0-9]{6}$/'],
+        ]);
+
+        $periode = $request->periode;
+        $year = substr($periode, 0, 4);
+        $month = substr($periode, 4, 2);
+        
+        // Find all active customers who have an internet package assigned
+        $activeCustomers = Customer::where('status', 'active')
+            ->whereNotNull('package_id')
+            ->get();
+
+        $generatedCount = 0;
+
+        foreach ($activeCustomers as $customer) {
+            // Check if invoice already exists for this period
+            $exists = Invoice::where('customer_id', $customer->id)
+                ->where('periode', $periode)
+                ->exists();
+
+            if (!$exists) {
+                $package = $customer->package;
+                if (!$package) continue;
+
+                // Unique invoice number (INV-YYYYMM-CUSTID)
+                $invoiceNumber = 'INV-' . $periode . '-' . str_pad($customer->id, 4, '0', STR_PAD_LEFT);
+                $dueDate = date('Y-m-d', strtotime("$year-$month-10"));
+
+                Invoice::create([
+                    'customer_id' => $customer->id,
+                    'invoice_number' => $invoiceNumber,
+                    'amount' => $package->price,
+                    'periode' => $periode,
+                    'penalty_amount' => 0,
+                    'discount_amount' => 0,
+                    'total_amount' => $package->price,
+                    'due_date' => $dueDate,
+                    'status' => 'unpaid',
+                ]);
+
+                $generatedCount++;
+            }
+        }
+
+        return redirect()->back()->with('success', "$generatedCount invoice tagihan baru untuk periode " . $this->formatPeriodName($periode) . " berhasil dibuat.");
+    }
+
+    /**
+     * Record payment transaction.
+     */
+    public function pay(Request $request, $id)
+    {
+        if (!auth()->user()->hasAnyRole(['Super Admin', 'Owner', 'Admin', 'Kasir'])) {
+            abort(403, 'Unauthorized to process payment.');
+        }
+
+        $request->validate([
+            'payment_method' => ['required', 'string', 'in:Tunai,Transfer Bank,QRIS,Lainnya'],
+            'notes' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $invoice = Invoice::findOrFail($id);
+
+        if ($invoice->status === 'paid') {
+            return redirect()->back()->with('error', 'Invoice ini sudah lunas.');
+        }
+
+        // Create Payment Transaction
+        Payment::create([
+            'invoice_id' => $invoice->id,
+            'amount' => $invoice->total_amount ?? $invoice->amount,
+            'payment_method' => $request->payment_method,
+            'payment_date' => now(),
+            'notes' => $request->notes,
+        ]);
+
+        // Update Invoice status
+        $invoice->update([
+            'status' => 'paid',
+            'paid_at' => now(),
+        ]);
+
+        // If the customer was isolated/disabled, restore their status to active!
+        $customer = $invoice->customer;
+        if ($customer && $customer->status !== 'active') {
+            app(CustomerService::class)->toggleStatus($customer->id, 'active');
+        }
+
+        return redirect()->back()->with('success', "Pembayaran untuk invoice {$invoice->invoice_number} berhasil dicatat. Status pelanggan telah diaktifkan kembali.");
+    }
+
+    private function formatPeriodName($periodStr)
+    {
+        if (strlen($periodStr) !== 6) return $periodStr;
+        $year = substr($periodStr, 0, 4);
+        $monthIndex = (int) substr($periodStr, 4, 2) - 1;
+        $monthNames = [
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+        return $monthNames[$monthIndex] . ' ' . $year;
     }
 }

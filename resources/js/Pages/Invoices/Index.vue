@@ -159,6 +159,77 @@ const downloadAsImage = async (format) => {
 const printInvoice = () => {
     window.print();
 };
+
+// Automated Billing & Payments States & Methods
+const isGenerateModalOpen = ref(false);
+const generatePeriod = ref('');
+const isGenerating = ref(false);
+
+const submitGenerateInvoices = () => {
+    if (!generatePeriod.value) return;
+    isGenerating.value = true;
+    router.post(route('invoices.generate'), {
+        periode: generatePeriod.value.replace('-', ''),
+    }, {
+        onSuccess: () => {
+            isGenerateModalOpen.value = false;
+            isGenerating.value = false;
+            generatePeriod.value = '';
+        },
+        onError: () => {
+            isGenerating.value = false;
+        }
+    });
+};
+
+const isPayModalOpen = ref(false);
+const payInvoiceItem = ref(null);
+const paymentMethod = ref('Tunai');
+const paymentNotes = ref('');
+const isProcessingPayment = ref(false);
+
+const showPayModal = (invoice) => {
+    payInvoiceItem.value = invoice;
+    paymentMethod.value = 'Tunai';
+    paymentNotes.value = '';
+    isPayModalOpen.value = true;
+};
+
+const submitPayment = () => {
+    if (!payInvoiceItem.value) return;
+    isProcessingPayment.value = true;
+    router.post(route('invoices.pay', payInvoiceItem.value.id), {
+        payment_method: paymentMethod.value,
+        notes: paymentNotes.value,
+    }, {
+        onSuccess: () => {
+            isPayModalOpen.value = false;
+            isProcessingPayment.value = false;
+            payInvoiceItem.value = null;
+        },
+        onError: () => {
+            isProcessingPayment.value = false;
+        }
+    });
+};
+
+const sendWhatsAppReminder = (invoice) => {
+    if (!invoice || !invoice.customer) return;
+    let phone = invoice.customer.whatsapp.replace(/[^0-9]/g, '');
+    if (phone.startsWith('0')) {
+        phone = '62' + phone.substring(1);
+    }
+    const customerName = invoice.customer.name;
+    const invoiceNum = invoice.invoice_number;
+    const amountStr = formatRupiah(invoice.total_amount || invoice.amount);
+    const dueDateStr = formatDate(invoice.due_date);
+    const periodStr = formatPeriod(invoice.periode);
+    
+    const message = `Halo Kak *${customerName}*,\n\nKami dari *PAK DOEL NET* menginfokan bahwa tagihan internet RTRW Net Anda untuk periode *${periodStr}* dengan No. Nota *${invoiceNum}* sebesar *${amountStr}* telah diterbitkan.\n\nTagihan jatuh tempo pada *${dueDateStr}*.\n\nSilakan lakukan pembayaran tunai ke loket atau transfer bank sebelum jatuh tempo demi kelancaran koneksi internet Anda.\n\nTerima kasih. 🙏`;
+    
+    const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+};
 </script>
 
 <template>
@@ -170,12 +241,21 @@ const printInvoice = () => {
                 <h2 class="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
                     Cetak & Download Invoice
                 </h2>
-                <button
-                    @click="clearFilters"
-                    class="self-start sm:self-center px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/50 rounded-xl shadow-sm transition"
-                >
-                    Reset Filter
-                </button>
+                <div class="flex items-center gap-2.5">
+                    <button
+                        v-if="canManage"
+                        @click="isGenerateModalOpen = true"
+                        class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition"
+                    >
+                        + Generate Tagihan Bulanan
+                    </button>
+                    <button
+                        @click="clearFilters"
+                        class="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/50 rounded-xl shadow-sm transition"
+                    >
+                        Reset Filter
+                    </button>
+                </div>
             </div>
         </template>
 
@@ -293,12 +373,26 @@ const printInvoice = () => {
                                         Terlambat
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-right">
+                                <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                                    <button
+                                        v-if="invoice.status !== 'paid' && canManage"
+                                        @click="showPayModal(invoice)"
+                                        class="inline-flex items-center px-3 py-1.5 bg-emerald-650 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
+                                    >
+                                        Bayar
+                                    </button>
+                                    <button
+                                        v-if="invoice.status !== 'paid' && invoice.customer"
+                                        @click="sendWhatsAppReminder(invoice)"
+                                        class="inline-flex items-center px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/30 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 rounded-xl text-xs font-bold transition shadow-sm"
+                                    >
+                                        WA
+                                    </button>
                                     <button
                                         @click="showInvoiceDetail(invoice)"
-                                        class="inline-flex items-center px-4 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/20 dark:hover:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-xl text-xs font-bold transition shadow-sm"
+                                        class="inline-flex items-center px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/20 dark:hover:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-xl text-xs font-bold transition shadow-sm"
                                     >
-                                        Lihat & Download
+                                        Detail
                                     </button>
                                 </td>
                             </tr>
@@ -530,6 +624,118 @@ const printInvoice = () => {
                         </div>
                     </div>
 
+                </div>
+            </Modal>
+
+            <!-- Modal Generate Tagihan -->
+            <Modal :show="isGenerateModalOpen" @close="isGenerateModalOpen = false" max-width="md">
+                <div class="p-6 space-y-4">
+                    <h3 class="text-md font-bold text-gray-950 dark:text-gray-100">
+                        Generate Tagihan Bulanan
+                    </h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                        Sistem akan otomatis membuat invoice tagihan baru untuk semua pelanggan berstatus <strong>Aktif</strong> yang memiliki paket internet terdaftar.
+                    </p>
+                    
+                    <form @submit.prevent="submitGenerateInvoices" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">Pilih Bulan & Tahun Periode</label>
+                            <input
+                                type="month"
+                                v-model="generatePeriod"
+                                required
+                                class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-gray-300"
+                            />
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button
+                                type="button"
+                                @click="isGenerateModalOpen = false"
+                                class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-xl transition"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                type="submit"
+                                :disabled="isGenerating || !generatePeriod"
+                                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition disabled:opacity-50"
+                            >
+                                {{ isGenerating ? 'Memproses...' : 'Mulai Generate' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </Modal>
+
+            <!-- Modal Bayar Tagihan (Record Payment) -->
+            <Modal :show="isPayModalOpen" @close="isPayModalOpen = false" max-width="md">
+                <div v-if="payInvoiceItem" class="p-6 space-y-4">
+                    <h3 class="text-md font-bold text-gray-950 dark:text-gray-100">
+                        Catat Pembayaran Tagihan
+                    </h3>
+                    
+                    <div class="p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/40 rounded-xl space-y-2 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">No. Invoice:</span>
+                            <span class="font-bold text-slate-850 dark:text-slate-200 font-mono">{{ payInvoiceItem.invoice_number }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Pelanggan:</span>
+                            <span class="font-bold text-slate-850 dark:text-slate-200">{{ payInvoiceItem.customer ? payInvoiceItem.customer.name : '-' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Username PPPoE:</span>
+                            <span class="font-bold text-slate-850 dark:text-slate-200 font-mono">{{ payInvoiceItem.customer ? payInvoiceItem.customer.pppoe_username : '-' }}</span>
+                        </div>
+                        <div class="flex justify-between border-t border-slate-200 dark:border-slate-850 pt-2 font-bold text-sm">
+                            <span class="text-indigo-600">Total Harus Dibayar:</span>
+                            <span class="text-indigo-600">{{ formatRupiah(payInvoiceItem.total_amount || payInvoiceItem.amount) }}</span>
+                        </div>
+                    </div>
+
+                    <form @submit.prevent="submitPayment" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">Metode Pembayaran</label>
+                            <select
+                                v-model="paymentMethod"
+                                required
+                                class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-gray-300"
+                            >
+                                <option value="Tunai">Tunai (Cash)</option>
+                                <option value="Transfer Bank">Transfer Bank</option>
+                                <option value="QRIS">QRIS</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">Catatan Pembayaran (Optional)</label>
+                            <textarea
+                                v-model="paymentNotes"
+                                placeholder="Contoh: Transfer ke rek BCA, bayar di loket, dll."
+                                rows="3"
+                                class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-gray-300"
+                            ></textarea>
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button
+                                type="button"
+                                @click="isPayModalOpen = false"
+                                class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-xl transition"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                type="submit"
+                                :disabled="isProcessingPayment"
+                                class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition disabled:opacity-50"
+                            >
+                                {{ isProcessingPayment ? 'Memproses...' : 'Konfirmasi Lunas' }}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </Modal>
         </div>
