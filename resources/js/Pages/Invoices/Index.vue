@@ -252,7 +252,7 @@ const sendWhatsAppReminder = (invoice) => {
                 </h2>
                 <div class="flex items-center gap-2.5">
                     <button
-                        v-if="canManage"
+                        v-if="$page.props.auth.user"
                         @click="isGenerateModalOpen = true"
                         class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition"
                     >
@@ -384,9 +384,9 @@ const sendWhatsAppReminder = (invoice) => {
                                 </td>
                                 <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
                                     <button
-                                        v-if="invoice.status !== 'paid' && canManage"
+                                        v-if="invoice.status !== 'paid'"
                                         @click="showPayModal(invoice)"
-                                        class="inline-flex items-center px-3 py-1.5 bg-emerald-650 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
+                                        class="inline-flex items-center px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
                                     >
                                         Bayar
                                     </button>

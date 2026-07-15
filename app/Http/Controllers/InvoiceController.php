@@ -52,12 +52,22 @@ class InvoiceController extends Controller
         // Get list of customers for filter dropdown
         $customers = Customer::select('id', 'name', 'pppoe_username')->get();
 
-        // Get unique periods for filter dropdown
-        $periodes = Invoice::select('periode')
+        // Get unique periods for filter dropdown, defaulting to include recent months
+        $dbPeriodes = Invoice::select('periode')
             ->whereNotNull('periode')
             ->distinct()
             ->orderBy('periode', 'desc')
-            ->pluck('periode');
+            ->pluck('periode')
+            ->toArray();
+
+        // Generate past 6 months and next 2 months default periods
+        $defaultPeriods = [];
+        for ($i = -2; $i <= 6; $i++) {
+            $defaultPeriods[] = date('Ym', strtotime("-$i month"));
+        }
+        
+        $periodes = array_unique(array_merge($dbPeriodes, $defaultPeriods));
+        rsort($periodes);
 
         return Inertia::render('Invoices/Index', [
             'invoices' => $invoices,
