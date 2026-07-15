@@ -251,6 +251,48 @@ const deleteCustomer = (id) => {
         router.delete(route('customers.destroy', id));
     }
 };
+
+const formatPeriod = (periodStr) => {
+    if (!periodStr || periodStr.length !== 6) return periodStr;
+    const year = periodStr.substring(0, 4);
+    const monthIndex = parseInt(periodStr.substring(4, 6)) - 1;
+    const monthNames = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    return `${monthNames[monthIndex]} ${year}`;
+};
+
+const formatRupiah = (value) => {
+    if (value === null || value === undefined) return 'Rp 0';
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0,
+    }).format(value);
+};
+
+const sendWhatsAppReminder = (customer) => {
+    if (!customer || !customer.current_invoice) return;
+    let phone = customer.whatsapp.replace(/[^0-9]/g, '');
+    if (phone.startsWith('0')) {
+        phone = '62' + phone.substring(1);
+    }
+    const customerName = customer.name;
+    const invoiceNum = customer.current_invoice.invoice_number;
+    const amountStr = formatRupiah(customer.current_invoice.total_amount || customer.current_invoice.amount);
+    const dueDate = customer.current_invoice.due_date;
+    const dueDateStr = dueDate ? new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(dueDate)) : '-';
+    const periodStr = formatPeriod(customer.current_invoice.periode);
+    
+    // Generate public link for invoice
+    const publicUrl = `${window.location.origin}/invoices/${invoiceNum}/public`;
+    
+    const message = `Halo Kak *${customerName}*,\n\nKami dari *PAK DOEL NET* menginfokan bahwa tagihan internet RTRW Net Anda untuk periode *${periodStr}* dengan No. Nota *${invoiceNum}* sebesar *${amountStr}* telah diterbitkan.\n\nAnda dapat melihat detail nota dan mendownload gambar JPG langsung melalui link berikut:\n🔗 ${publicUrl}\n\nTagihan jatuh tempo pada *${dueDateStr}*.\n\nSilakan lakukan pembayaran tunai ke loket atau transfer bank sebelum jatuh tempo demi kelancaran koneksi internet Anda.\n\nTerima kasih. 🙏`;
+    
+    const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+};
 </script>
 
 <template>
@@ -333,13 +375,14 @@ const deleteCustomer = (id) => {
                                     <th class="p-4 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">PPPoE Account</th>
                                     <th class="p-4 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Router / Paket</th>
                                     <th class="p-4 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Peta & Kontak</th>
+                                    <th class="p-4 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Tagihan</th>
                                     <th class="p-4 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Status</th>
                                     <th class="p-4 text-xs font-semibold uppercase text-right text-gray-500 dark:text-gray-400">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                            <tbody class="divide-y divide-gray-150 dark:divide-gray-700">
                                 <tr v-if="customers.length === 0">
-                                    <td colspan="6" class="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                                    <td colspan="7" class="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
                                         Belum ada data pelanggan terdaftar.
                                     </td>
                                 </tr>
@@ -397,6 +440,39 @@ const deleteCustomer = (id) => {
                                         </div>
                                     </td>
 
+                                    <!-- Tagihan Badge -->
+                                    <td class="p-4 text-xs">
+                                        <div v-if="customer.current_invoice" class="space-y-1">
+                                            <span
+                                                v-if="customer.current_invoice.status === 'paid'"
+                                                class="inline-flex items-center px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 uppercase tracking-wider text-[10px]"
+                                            >
+                                                Lunas
+                                            </span>
+                                            <span
+                                                v-else-if="customer.current_invoice.status === 'unpaid'"
+                                                class="inline-flex items-center px-2 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 uppercase tracking-wider text-[10px]"
+                                            >
+                                                Belum Bayar
+                                            </span>
+                                            <span
+                                                v-else
+                                                class="inline-flex items-center px-2 py-0.5 rounded-full font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-400 uppercase tracking-wider text-[10px]"
+                                            >
+                                                Terlambat
+                                            </span>
+                                            <div class="text-[9px] text-gray-400 font-mono">
+                                                {{ formatPeriod(customer.current_invoice.periode) }}
+                                            </div>
+                                        </div>
+                                        <span
+                                            v-else
+                                            class="inline-flex items-center px-2 py-0.5 rounded-full font-semibold bg-gray-150 text-gray-600 dark:bg-gray-800 dark:text-gray-400 text-[10px]"
+                                        >
+                                            Belum Terbit
+                                        </span>
+                                    </td>
+
                                     <!-- Status Badge -->
                                     <td class="p-4">
                                         <select
@@ -417,6 +493,13 @@ const deleteCustomer = (id) => {
 
                                     <!-- Actions -->
                                     <td class="p-4 text-sm text-right space-x-2">
+                                        <button
+                                            v-if="customer.current_invoice && customer.current_invoice.status !== 'paid'"
+                                            @click="sendWhatsAppReminder(customer)"
+                                            class="inline-flex items-center px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-sm"
+                                        >
+                                            WA Nota
+                                        </button>
                                         <Link
                                             :href="route('connection-history.index', { customer_id: customer.id })"
                                             class="inline-flex items-center px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-medium transition"

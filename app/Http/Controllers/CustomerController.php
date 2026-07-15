@@ -34,7 +34,7 @@ class CustomerController extends Controller
     {
         Gate::authorize('viewAny', Customer::class);
 
-        $customers = Customer::with(['router', 'package'])->latest()->get();
+        $customers = Customer::with(['router', 'package', 'currentInvoice.payment'])->latest()->get();
         $routers = $this->routerService->getAllRouters()->where('is_active', true)->values();
         $packages = $this->packageService->getAllPackages()->where('is_active', true)->values();
 

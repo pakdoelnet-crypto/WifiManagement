@@ -37,6 +37,35 @@ class Customer extends Model
         'joined_at' => 'date',
     ];
 
+    protected static function booted()
+    {
+        static::created(function ($customer) {
+            if ($customer->package_id) {
+                $periode = date('Ym');
+                $year = substr($periode, 0, 4);
+                $month = substr($periode, 4, 2);
+                
+                $invoiceNumber = 'INV-' . $periode . '-' . str_pad($customer->id, 4, '0', STR_PAD_LEFT);
+                $dueDate = date('Y-m-d', strtotime("$year-$month-10"));
+                
+                $package = $customer->package;
+                $price = $package ? $package->price : 0;
+
+                \App\Models\Invoice::create([
+                    'customer_id' => $customer->id,
+                    'invoice_number' => $invoiceNumber,
+                    'amount' => $price,
+                    'periode' => $periode,
+                    'penalty_amount' => 0,
+                    'discount_amount' => 0,
+                    'total_amount' => $price,
+                    'due_date' => $dueDate,
+                    'status' => 'unpaid',
+                ]);
+            }
+        });
+    }
+
     public function router()
     {
         return $this->belongsTo(Router::class);
@@ -45,5 +74,15 @@ class Customer extends Model
     public function package()
     {
         return $this->belongsTo(Package::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function currentInvoice()
+    {
+        return $this->hasOne(Invoice::class)->where('periode', date('Ym'));
     }
 }
