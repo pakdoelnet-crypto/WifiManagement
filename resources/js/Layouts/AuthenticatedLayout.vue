@@ -185,11 +185,7 @@ const currentTitle = computed(() => {
             <!-- Brand Logo -->
             <div class="h-16 px-6 flex items-center border-b border-gray-200 dark:border-gray-700/50 gap-3 shrink-0">
                 <Link :href="route('dashboard')" class="flex items-center gap-2">
-                    <div class="flex items-center justify-center p-2 rounded-xl bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                    </div>
+                    <ApplicationLogo class="h-8 w-8 rounded-full object-cover shrink-0" />
                     <span class="text-md font-bold tracking-wider bg-gradient-to-r from-indigo-600 to-emerald-600 dark:from-indigo-400 dark:to-emerald-400 bg-clip-text text-transparent">
                         PAK DOEL NET
                     </span>

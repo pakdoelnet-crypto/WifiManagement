@@ -130,9 +130,7 @@ const printInvoice = () => {
             <div class="flex items-start justify-between border-b-2 border-slate-100 pb-6 mb-6">
                 <div class="space-y-2">
                     <div class="flex items-center gap-2">
-                        <div class="h-9 w-9 rounded-lg bg-indigo-600 flex items-center justify-center font-black text-white shadow-md text-sm shrink-0">
-                            PD
-                        </div>
+                        <img src="/images/logo.jpg" alt="PAK DOEL NET" class="h-9 w-9 rounded-full object-cover shrink-0 shadow-sm" />
                         <span class="text-xl font-black text-slate-900 tracking-wider">PAK DOEL NET</span>
                     </div>
                     <div class="text-[10px] text-slate-500 space-y-0.5">
@@ -182,8 +180,6 @@ const printInvoice = () => {
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold">
                             <th class="px-4 py-3">Deskripsi Layanan</th>
-                            <th class="px-4 py-3">Username PPPoE</th>
-                            <th class="px-4 py-3 text-right">Kecepatan</th>
                             <th class="px-4 py-3 text-right">Subtotal</th>
                         </tr>
                     </thead>
@@ -194,16 +190,6 @@ const printInvoice = () => {
                                     {{ invoice.customer && invoice.customer.package ? invoice.customer.package.name : 'Paket Layanan Internet' }}
                                 </p>
                                 <p class="text-[10px] text-slate-400">Bulanan RTRW Net internet berlangganan</p>
-                            </td>
-                            <td class="px-4 py-4 font-mono text-slate-600">
-                                {{ invoice.customer ? invoice.customer.pppoe_username : '-' }}
-                            </td>
-                            <td class="px-4 py-4 text-right text-slate-600">
-                                <div v-if="invoice.customer && invoice.customer.package">
-                                    ↑ {{ formatKbpsToMbps(invoice.customer.package.upload_limit) }}<br/>
-                                    ↓ {{ formatKbpsToMbps(invoice.customer.package.download_limit) }}
-                                </div>
-                                <div v-else>-</div>
                             </td>
                             <td class="px-4 py-4 text-right font-bold text-slate-900">
                                 {{ formatRupiah(invoice.amount) }}
