@@ -115,6 +115,8 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+Route::get('/invoices/{invoice_number}/public', [\App\Http\Controllers\InvoiceController::class, 'publicView'])->name('invoices.public');
+
 Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     $token = env('DEPLOY_TOKEN');
     if (!$token || $request->header('X-Deploy-Token') !== $token) {

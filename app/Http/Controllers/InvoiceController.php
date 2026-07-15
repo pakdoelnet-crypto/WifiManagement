@@ -169,6 +169,17 @@ class InvoiceController extends Controller
         return redirect()->back()->with('success', "Pembayaran untuk invoice {$invoice->invoice_number} berhasil dicatat. Status pelanggan telah diaktifkan kembali.");
     }
 
+    public function publicView($invoice_number)
+    {
+        $invoice = Invoice::with(['customer.package', 'payment'])
+            ->where('invoice_number', $invoice_number)
+            ->firstOrFail();
+
+        return Inertia::render('Invoices/Public', [
+            'invoice' => $invoice
+        ]);
+    }
+
     private function formatPeriodName($periodStr)
     {
         if (strlen($periodStr) !== 6) return $periodStr;

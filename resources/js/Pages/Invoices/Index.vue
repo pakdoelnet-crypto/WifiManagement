@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, router, Link } from '@inertiajs/vue3';
+import { Head, router, Link, usePage } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
 const debounce = (fn, delay) => {
     let timeout;
@@ -36,6 +36,12 @@ const search = ref(props.filters.search || '');
 const customerId = ref(props.filters.customer_id || '');
 const status = ref(props.filters.status || '');
 const periodFilter = ref(props.filters.periode || '');
+
+const page = usePage();
+const canManage = computed(() => {
+    const roles = page.props.auth?.user?.roles || [];
+    return roles.includes('Super Admin') || roles.includes('Owner') || roles.includes('Admin') || roles.includes('Kasir');
+});
 
 // Modal state
 const isModalOpen = ref(false);
@@ -225,7 +231,10 @@ const sendWhatsAppReminder = (invoice) => {
     const dueDateStr = formatDate(invoice.due_date);
     const periodStr = formatPeriod(invoice.periode);
     
-    const message = `Halo Kak *${customerName}*,\n\nKami dari *PAK DOEL NET* menginfokan bahwa tagihan internet RTRW Net Anda untuk periode *${periodStr}* dengan No. Nota *${invoiceNum}* sebesar *${amountStr}* telah diterbitkan.\n\nTagihan jatuh tempo pada *${dueDateStr}*.\n\nSilakan lakukan pembayaran tunai ke loket atau transfer bank sebelum jatuh tempo demi kelancaran koneksi internet Anda.\n\nTerima kasih. 🙏`;
+    // Generate public link for invoice
+    const publicUrl = `${window.location.origin}/invoices/${invoiceNum}/public`;
+    
+    const message = `Halo Kak *${customerName}*,\n\nKami dari *PAK DOEL NET* menginfokan bahwa tagihan internet RTRW Net Anda untuk periode *${periodStr}* dengan No. Nota *${invoiceNum}* sebesar *${amountStr}* telah diterbitkan.\n\nAnda dapat melihat detail nota dan mendownload gambar JPG langsung melalui link berikut:\n🔗 ${publicUrl}\n\nTagihan jatuh tempo pada *${dueDateStr}*.\n\nSilakan lakukan pembayaran tunai ke loket atau transfer bank sebelum jatuh tempo demi kelancaran koneksi internet Anda.\n\nTerima kasih. 🙏`;
     
     const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
