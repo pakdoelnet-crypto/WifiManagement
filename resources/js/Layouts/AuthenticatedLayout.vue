@@ -53,94 +53,122 @@ onMounted(() => {
     setInterval(updateClock, 1000);
 });
 
+const sidebarCategories = computed(() => {
+    const roles = page.props.auth.user.roles || [];
+    const permissions = page.props.auth.user.permissions || [];
+
+    const hasLogAccess = roles.some(r => ['Super Admin', 'Owner', 'Admin'].includes(r));
+    const canViewInvoices = permissions.includes('invoices.view') || roles.includes('Super Admin');
+    const canManageRoles = permissions.includes('roles.manage') || roles.includes('Super Admin');
+
+    const categories = [
+        {
+            title: 'PELANGGAN',
+            items: [
+                {
+                    name: 'Manajemen Pelanggan',
+                    route: route('customers.index'),
+                    active: route().current('customers.*'),
+                    icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>`
+                },
+                {
+                    name: 'Pelanggan Online',
+                    route: route('online-customers.index'),
+                    active: route().current('online-customers.*'),
+                    icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>`
+                },
+                {
+                    name: 'Riwayat Koneksi',
+                    route: route('connection-history.index'),
+                    active: route().current('connection-history.index'),
+                    icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+                }
+            ]
+        },
+        {
+            title: 'JARINGAN',
+            items: [
+                {
+                    name: 'Manajemen Router',
+                    route: route('routers.index'),
+                    active: route().current('routers.*'),
+                    icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg>`
+                },
+                {
+                    name: 'Paket Bandwidth',
+                    route: route('packages.index'),
+                    active: route().current('packages.*'),
+                    icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>`
+                },
+                {
+                    name: 'Peta Jaringan',
+                    route: route('network-map.index'),
+                    active: route().current('network-map.*'),
+                    icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>`
+                },
+                {
+                    name: 'Secret PPPoE',
+                    route: route('ppp-secrets.index'),
+                    active: route().current('ppp-secrets.*'),
+                    icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>`
+                }
+            ]
+        },
+        {
+            title: 'KEUANGAN',
+            items: canViewInvoices ? [
+                {
+                    name: 'Invoice',
+                    route: route('invoices.index'),
+                    active: route().current('invoices.*'),
+                    icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`
+                }
+            ] : []
+        },
+        {
+            title: 'OPERASIONAL',
+            items: hasLogAccess ? [
+                {
+                    name: 'Log Aktivitas',
+                    route: route('audit-logs.index'),
+                    active: route().current('audit-logs.*'),
+                    icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+                }
+            ] : []
+        },
+        {
+            title: 'PENGATURAN',
+            items: canManageRoles ? [
+                {
+                    name: 'Manajemen Role',
+                    route: route('roles.index'),
+                    active: route().current('roles.*'),
+                    icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>`
+                },
+                {
+                    name: 'Manajemen Staf',
+                    route: route('users.index'),
+                    active: route().current('users.*'),
+                    icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>`
+                }
+            ] : []
+        }
+    ];
+
+    return categories.filter(c => c.items.length > 0);
+});
+
 const menuItems = computed(() => {
     const list = [
         {
             name: 'Dashboard',
             route: route('dashboard'),
-            active: route().current('dashboard'),
-            icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>`
-        },
-        {
-            name: 'Manajemen Router',
-            route: route('routers.index'),
-            active: route().current('routers.*'),
-            icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg>`
-        },
-        {
-            name: 'Paket Bandwidth',
-            route: route('packages.index'),
-            active: route().current('packages.*'),
-            icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>`
-        },
-        {
-            name: 'Manajemen Pelanggan',
-            route: route('customers.index'),
-            active: route().current('customers.*'),
-            icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>`
-        },
-        {
-            name: 'Peta Jaringan',
-            route: route('network-map.index'),
-            active: route().current('network-map.*'),
-            icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>`
-        },
-        {
-            name: 'Pelanggan Online',
-            route: route('online-customers.index'),
-            active: route().current('online-customers.*'),
-            icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>`
-        },
-        {
-            name: 'Riwayat Koneksi',
-            route: route('connection-history.index'),
-            active: route().current('connection-history.index'),
-            icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+            active: route().current('dashboard')
         }
     ];
-
-    // Log Aktivitas (Super Admin, Owner, Admin only)
-    const roles = page.props.auth.user.roles || [];
-    const permissions = page.props.auth.user.permissions || [];
-    
-    const hasLogAccess = roles.some(r => ['Super Admin', 'Owner', 'Admin'].includes(r));
-    if (hasLogAccess) {
-        list.push({
-            name: 'Log Aktivitas',
-            route: route('audit-logs.index'),
-            active: route().current('audit-logs.*'),
-            icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
-        });
-    }
-
-    // Invoices (invoices.view permission or Super Admin)
-    const canViewInvoices = permissions.includes('invoices.view') || roles.includes('Super Admin');
-    if (canViewInvoices) {
-        list.push({
-            name: 'Invoice',
-            route: route('invoices.index'),
-            active: route().current('invoices.*'),
-            icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`
-        });
-    }
-
-    // Roles & Staf Management (roles.manage permission or Super Admin)
-    const canManageRoles = permissions.includes('roles.manage') || roles.includes('Super Admin');
-    if (canManageRoles) {
-        list.push({
-            name: 'Manajemen Role',
-            route: route('roles.index'),
-            active: route().current('roles.*'),
-            icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>`
-        });
-        list.push({
-            name: 'Manajemen Staf',
-            route: route('users.index'),
-            active: route().current('users.*'),
-            icon: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>`
-        });
-    }
-
+    sidebarCategories.value.forEach(c => {
+        list.push(...c.items);
+    });
     return list;
 });
 
@@ -169,25 +197,55 @@ const currentTitle = computed(() => {
             </div>
 
             <!-- Navigation Links -->
-            <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
-                <Link
-                    v-for="item in menuItems"
-                    :key="item.name"
-                    :href="item.route"
-                    :class="[
-                        item.active
-                            ? 'bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/10'
-                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/40 hover:text-gray-900 dark:hover:text-white'
-                    ]"
-                    class="flex items-center px-4 py-2.5 rounded-xl text-sm transition group"
-                >
-                    <span
-                        class="mr-3 shrink-0 transition-colors"
-                        :class="[item.active ? 'text-white' : 'text-gray-400 dark:text-gray-500 group-hover:text-indigo-500']"
-                        v-html="item.icon"
-                    ></span>
-                    {{ item.name }}
-                </Link>
+            <nav class="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
+                <!-- Dashboard (Always Top Standalone) -->
+                <div>
+                    <Link
+                        :href="route('dashboard')"
+                        :class="[
+                            route().current('dashboard')
+                                ? 'bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/10'
+                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/40 hover:text-gray-900 dark:hover:text-white'
+                        ]"
+                        class="flex items-center px-4 py-2.5 rounded-xl text-sm transition group"
+                    >
+                        <span
+                            class="mr-3 shrink-0 transition-colors"
+                            :class="[route().current('dashboard') ? 'text-white' : 'text-gray-400 dark:text-gray-500 group-hover:text-indigo-500']"
+                            v-html="`<svg class='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' /></svg>`"
+                        ></span>
+                        Dashboard
+                    </Link>
+                </div>
+
+                <!-- Grouped Categories -->
+                <div v-for="cat in sidebarCategories" :key="cat.title" class="space-y-1.5 pt-1">
+                    <!-- Category Section Header with Line -->
+                    <div class="flex items-center px-4 py-1 text-[10px] font-black tracking-widest text-gray-400 dark:text-gray-500 uppercase select-none">
+                        <span class="mr-2 shrink-0">{{ cat.title }}</span>
+                        <div class="flex-1 border-t border-gray-150 dark:border-gray-700/40 opacity-70"></div>
+                    </div>
+                    
+                    <!-- Category Menu Items -->
+                    <Link
+                        v-for="item in cat.items"
+                        :key="item.name"
+                        :href="item.route"
+                        :class="[
+                            item.active
+                                ? 'bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/10'
+                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/40 hover:text-gray-900 dark:hover:text-white'
+                        ]"
+                        class="flex items-center px-4 py-2.5 rounded-xl text-sm transition group"
+                    >
+                        <span
+                            class="mr-3 shrink-0 transition-colors"
+                            :class="[item.active ? 'text-white' : 'text-gray-400 dark:text-gray-500 group-hover:text-indigo-500']"
+                            v-html="item.icon"
+                        ></span>
+                        {{ item.name }}
+                    </Link>
+                </div>
             </nav>
 
             <!-- User Info Sidebar Footer -->

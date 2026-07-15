@@ -77,6 +77,77 @@ class MikrotikConnectionService
     }
 
     /**
+     * Fetch all interfaces from the router.
+     */
+    public function getInterfaces(Router $router): array
+    {
+        try {
+            $client = $this->getClient($router);
+            $response = $client->query('/interface/print')->read();
+
+            if (is_array($response)) {
+                return [
+                    'success' => true,
+                    'interfaces' => array_map(function ($item) {
+                        return [
+                            'name' => $item['name'] ?? '',
+                            'type' => $item['type'] ?? '',
+                            'running' => ($item['running'] ?? 'false') === 'true',
+                            'disabled' => ($item['disabled'] ?? 'false') === 'true',
+                        ];
+                    }, $response)
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Gagal membaca interface dari MikroTik.'
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Get real-time traffic statistics for a specific interface.
+     */
+    public function getInterfaceTraffic(Router $router, string $interfaceName): array
+    {
+        try {
+            $client = $this->getClient($router);
+            $query = new Query('/interface/monitor-traffic', [
+                '=interface=' . $interfaceName,
+                '=once=' => '',
+            ]);
+            $response = $client->query($query)->read();
+
+            if (is_array($response) && isset($response[0])) {
+                $data = $response[0];
+                return [
+                    'success' => true,
+                    'data' => [
+                        'rx' => (int) ($data['rx-bits-per-second'] ?? 0),
+                        'tx' => (int) ($data['tx-bits-per-second'] ?? 0),
+                    ]
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Gagal memantau trafik interface.'
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Fetch all PPP profiles from the router.
      *
      * @param Router $router

@@ -20,6 +20,9 @@ Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleC
 use App\Http\Controllers\DashboardController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/routers/{id}/live-resources', [DashboardController::class, 'getRouterResources'])->middleware(['auth'])->name('routers.live-resources');
+Route::get('/routers/{id}/interfaces', [DashboardController::class, 'getRouterInterfaces'])->middleware(['auth'])->name('routers.interfaces');
+Route::get('/routers/{id}/active-traffic', [DashboardController::class, 'activeRouterTraffic'])->middleware(['auth'])->name('routers.active-traffic');
 
 use App\Http\Controllers\RouterController;
 use App\Http\Controllers\PackageController;
@@ -29,8 +32,15 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\NetworkPointController;
 use App\Http\Controllers\FiberRouteController;
+use App\Http\Controllers\PppSecretController;
 
 Route::middleware('auth')->group(function () {
+    // PPPoE Secret Management Routes
+    Route::get('/ppp-secrets', [PppSecretController::class, 'index'])->name('ppp-secrets.index');
+    Route::post('/ppp-secrets', [PppSecretController::class, 'store'])->name('ppp-secrets.store');
+    Route::post('/ppp-secrets/toggle', [PppSecretController::class, 'toggle'])->name('ppp-secrets.toggle');
+    Route::delete('/ppp-secrets', [PppSecretController::class, 'destroy'])->name('ppp-secrets.destroy');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -97,9 +107,25 @@ Route::middleware('auth')->group(function () {
     });
 
     // Invoices Routes (can:invoices.view permission)
+    // Invoices Routes (can:invoices.view permission)
     Route::middleware('can:invoices.view')->group(function () {
         Route::get('/invoices', [\App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');
     });
+});
+
+Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
+    $token = env('DEPLOY_TOKEN');
+    if (!$token || $request->header('X-Deploy-Token') !== $token) {
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
+    $output = [];
+    exec('cd /var/www/pakdoelnet && git stash 2>&1', $output);
+    exec('cd /var/www/pakdoelnet && git pull 2>&1', $output);
+    exec('cd /var/www/pakdoelnet && npm run build 2>&1', $output);
+    return response()->json([
+        'success' => true,
+        'output' => $output
+    ]);
 });
 
 require __DIR__.'/auth.php';
