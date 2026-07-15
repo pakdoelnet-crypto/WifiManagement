@@ -187,6 +187,7 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     $output = [];
     exec('cd /var/www/pakdoelnet && git stash 2>&1', $output);
     exec('cd /var/www/pakdoelnet && git pull 2>&1', $output);
+    exec('cd /var/www/pakdoelnet && php artisan migrate --force 2>&1', $output);
     exec('cd /var/www/pakdoelnet && npm run build 2>&1', $output);
     return response()->json([
         'success' => true,
