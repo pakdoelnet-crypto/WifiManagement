@@ -185,10 +185,8 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
         return response()->json(['error' => 'Unauthorized'], 401);
     }
     $output = [];
-    exec('cd /var/www/pakdoelnet && git stash 2>&1', $output);
-    exec('cd /var/www/pakdoelnet && git pull 2>&1', $output);
-    exec('cd /var/www/pakdoelnet && php artisan migrate --force 2>&1', $output);
-    exec('cd /var/www/pakdoelnet && npm run build 2>&1', $output);
+    exec('cd /var/www/pakdoelnet && git log -n 5 --oneline 2>&1', $output);
+    exec('cd /var/www/pakdoelnet && git status 2>&1', $output);
     return response()->json([
         'success' => true,
         'output' => $output
