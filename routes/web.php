@@ -113,6 +113,68 @@ Route::middleware('auth')->group(function () {
         Route::post('/invoices/generate', [\App\Http\Controllers\InvoiceController::class, 'generate'])->name('invoices.generate');
         Route::post('/invoices/{id}/pay', [\App\Http\Controllers\InvoiceController::class, 'pay'])->name('invoices.pay');
     });
+
+    // NOC Dashboard
+    Route::get('/noc-dashboard', [\App\Http\Controllers\NocDashboardController::class, 'index'])->name('noc.index');
+    Route::get('/noc-dashboard/live', [\App\Http\Controllers\NocDashboardController::class, 'getLiveStats'])->name('noc.live');
+
+    // Finance Dashboard & Expenses
+    Route::get('/finance', [\App\Http\Controllers\FinanceController::class, 'index'])->name('finance.index');
+    Route::post('/finance/expenses', [\App\Http\Controllers\FinanceController::class, 'storeExpense'])->name('finance.expenses.store');
+    Route::delete('/finance/expenses/{id}', [\App\Http\Controllers\FinanceController::class, 'destroyExpense'])->name('finance.expenses.destroy');
+
+    // Ticket Gangguan
+    Route::get('/tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('tickets.index');
+    Route::post('/tickets', [\App\Http\Controllers\TicketController::class, 'store'])->name('tickets.store');
+    Route::post('/tickets/{id}', [\App\Http\Controllers\TicketController::class, 'update'])->name('tickets.update');
+    Route::delete('/tickets/{id}', [\App\Http\Controllers\TicketController::class, 'destroy'])->name('tickets.destroy');
+
+    // Inventory
+    Route::get('/inventory', [\App\Http\Controllers\InventoryController::class, 'index'])->name('inventory.index');
+    Route::post('/inventory', [\App\Http\Controllers\InventoryController::class, 'store'])->name('inventory.store');
+    Route::put('/inventory/{id}', [\App\Http\Controllers\InventoryController::class, 'update'])->name('inventory.update');
+    Route::post('/inventory/{id}/adjust', [\App\Http\Controllers\InventoryController::class, 'adjustStock'])->name('inventory.adjust');
+    Route::delete('/inventory/{id}', [\App\Http\Controllers\InventoryController::class, 'destroy'])->name('inventory.destroy');
+
+    // WhatsApp Center
+    Route::get('/whatsapp', [\App\Http\Controllers\WhatsappCenterController::class, 'index'])->name('whatsapp.index');
+    Route::post('/whatsapp/settings', [\App\Http\Controllers\WhatsappCenterController::class, 'updateSettings'])->name('whatsapp.settings.update');
+    Route::post('/whatsapp/send-manual', [\App\Http\Controllers\WhatsappCenterController::class, 'sendManual'])->name('whatsapp.send-manual');
+    Route::post('/whatsapp/broadcast', [\App\Http\Controllers\WhatsappCenterController::class, 'broadcast'])->name('whatsapp.broadcast');
+
+    // Traffic Monitoring
+    Route::get('/traffic-monitoring', [\App\Http\Controllers\TrafficController::class, 'index'])->name('traffic.index');
+    Route::get('/traffic-monitoring/stats', [\App\Http\Controllers\TrafficController::class, 'getStats'])->name('traffic.stats');
+
+    // SLA Dashboard
+    Route::get('/sla-dashboard', [\App\Http\Controllers\SlaController::class, 'index'])->name('sla.index');
+
+    // ODP Management
+    Route::get('/odps', [\App\Http\Controllers\OdpController::class, 'index'])->name('odp.index');
+    Route::post('/odps', [\App\Http\Controllers\OdpController::class, 'store'])->name('odp.store');
+    Route::put('/odps/{id}', [\App\Http\Controllers\OdpController::class, 'update'])->name('odp.update');
+    Route::post('/odps/{id}/assign', [\App\Http\Controllers\OdpController::class, 'assignCustomer'])->name('odp.assign');
+    Route::delete('/odps/{id}', [\App\Http\Controllers\OdpController::class, 'destroy'])->name('odp.destroy');
+
+    // Backup
+    Route::get('/backups', [\App\Http\Controllers\BackupController::class, 'index'])->name('backups.index');
+    Route::post('/backups/db', [\App\Http\Controllers\BackupController::class, 'backupDatabase'])->name('backups.db');
+    Route::post('/backups/router/{routerId}', [\App\Http\Controllers\BackupController::class, 'backupRouter'])->name('backups.router');
+    Route::get('/backups/download/{filename}', [\App\Http\Controllers\BackupController::class, 'download'])->name('backups.download');
+    Route::delete('/backups/{filename}', [\App\Http\Controllers\BackupController::class, 'destroy'])->name('backups.destroy');
+    Route::post('/backups/restore', [\App\Http\Controllers\BackupController::class, 'restore'])->name('backups.restore');
+});
+
+// Customer Portal public/unauthenticated routes
+Route::get('/portal/login', [\App\Http\Controllers\CustomerAuthController::class, 'showLogin'])->name('portal.login');
+Route::post('/portal/login', [\App\Http\Controllers\CustomerAuthController::class, 'login']);
+Route::post('/portal/logout', [\App\Http\Controllers\CustomerAuthController::class, 'logout'])->name('portal.logout');
+
+// Customer Portal authenticated routes
+Route::middleware([\App\Http\Middleware\CustomerPortalAuth::class])->group(function () {
+    Route::get('/portal/dashboard', [\App\Http\Controllers\CustomerPortalController::class, 'index'])->name('portal.dashboard');
+    Route::post('/portal/ticket', [\App\Http\Controllers\CustomerPortalController::class, 'reportTicket'])->name('portal.ticket');
+    Route::post('/portal/change-password', [\App\Http\Controllers\CustomerPortalController::class, 'changePassword'])->name('portal.change-password');
 });
 
 Route::get('/invoices/{invoice_number}/public', [\App\Http\Controllers\InvoiceController::class, 'publicView'])->name('invoices.public');
