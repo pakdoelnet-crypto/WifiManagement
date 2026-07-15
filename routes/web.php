@@ -128,4 +128,59 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     ]);
 });
 
+Route::get('/debug-connection', function() {
+    $routers = \App\Models\Router::all();
+    $results = [];
+    foreach ($routers as $r) {
+        $connectionService = app(\App\Services\MikrotikConnectionService::class);
+        $res = $connectionService->testConnection($r);
+        $sessionsRes = $connectionService->getPppActiveSessions($r);
+        
+        $results[] = [
+            'router_name' => $r->name,
+            'ip' => $r->ip_address,
+            'port' => $r->port,
+            'type' => $r->connection_type,
+            'is_active' => $r->is_active,
+            'test_connection' => $res,
+            'active_sessions_count' => $sessionsRes['success'] ? count($sessionsRes['sessions']) : $sessionsRes['error']
+        ];
+    }
+    
+    $dbSessionsCount = \App\Models\PppActiveSession::count();
+    $dbCustomersCount = \App\Models\Customer::count();
+    
+    $schedulerLog = file_exists(storage_path('logs/scheduler.log')) ? tail_file(storage_path('logs/scheduler.log'), 20) : 'No scheduler log';
+    $laravelLog = file_exists(storage_path('logs/laravel.log')) ? tail_file(storage_path('logs/laravel.log'), 20) : 'No laravel log';
+
+    return response()->json([
+        'routers' => $results,
+        'db_active_sessions' => $dbSessionsCount,
+        'db_customers' => $dbCustomersCount,
+        'scheduler_log' => $schedulerLog,
+        'laravel_log' => $laravelLog
+    ]);
+});
+
+function tail_file($filepath, $lines = 10) {
+    if (!file_exists($filepath)) return '';
+    $f = fopen($filepath, "rb");
+    if (!$f) return '';
+    $buffer = 4096;
+    fseek($f, 0, SEEK_END);
+    $pos = ftell($f);
+    $count = 0;
+    $data = '';
+    while ($pos > 0 && $count < $lines) {
+        $seek = min($pos, $buffer);
+        $pos -= $seek;
+        fseek($f, $pos, SEEK_SET);
+        $chunk = fread($f, $seek);
+        $count += substr_count($chunk, "\n");
+        $data = $chunk . $data;
+    }
+    fclose($f);
+    return implode("\n", array_slice(explode("\n", $data), -$lines));
+}
+
 require __DIR__.'/auth.php';
