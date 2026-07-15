@@ -164,6 +164,16 @@ Route::get('/debug-connection', function() {
     $processes = [];
     exec('ps aux | grep php', $processes);
 
+    // Check supervisor conf and status
+    $supervisorConfExists = file_exists('/etc/supervisor/conf.d/pakdoelnet-scheduler.conf');
+    $supervisorConf = $supervisorConfExists ? file_get_contents('/etc/supervisor/conf.d/pakdoelnet-scheduler.conf') : 'Does not exist';
+    
+    $supervisorStatus = [];
+    exec('supervisorctl status 2>&1', $supervisorStatus);
+    
+    $sudoSupervisorStatus = [];
+    exec('sudo supervisorctl status 2>&1', $sudoSupervisorStatus);
+
     // Scan log dir
     $logDir = storage_path('logs');
     $logFiles = file_exists($logDir) ? scandir($logDir) : [];
@@ -178,6 +188,10 @@ Route::get('/debug-connection', function() {
         'jobs_count' => $jobsCount,
         'failed_jobs_count' => $failedJobsCount,
         'running_processes' => $processes,
+        'supervisor_conf_exists' => $supervisorConfExists,
+        'supervisor_conf' => $supervisorConf,
+        'supervisor_status' => $supervisorStatus,
+        'sudo_supervisor_status' => $sudoSupervisorStatus,
         'log_files' => $logFiles,
         'scheduler_log' => $schedulerLog,
         'laravel_log' => $laravelLog
