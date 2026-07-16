@@ -1,0 +1,1 @@
+import{j as e,v as t}from"./app-Bbw_A6Yn.js";import{t as n}from"./_plugin-vue_export-helper-BDNMzG2s.js";var r={},i={src:`/images/logo.jpg`,alt:`PAK DOEL NET`,class:`rounded-full object-cover`};function a(n,r){return e(),t(`img`,i)}var o=n(r,[[`render`,a]]);export{o as t};

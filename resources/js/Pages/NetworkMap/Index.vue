@@ -111,24 +111,43 @@ const loadLeaflet = () => {
 const getCustomerIcon = (L, customer) => {
     const isOnline = onlineUsernamesList.value.includes(customer.pppoe_username);
     let color = '#9CA3AF'; // grey offline
+    let badgeColor = 'bg-gray-400';
+    let pulseBg = '';
+
     if (customer.status === 'isolir' || customer.status === 'suspended') {
         color = '#EF4444'; // red isolir
+        badgeColor = 'bg-red-500';
     } else if (isOnline) {
         color = '#10B981'; // green online
+        badgeColor = 'bg-emerald-500';
+        pulseBg = 'bg-emerald-400';
     }
 
-    // SVG for a wifi client
+    // Live pulsing dot and outer ring if online
+    const pulseElement = isOnline 
+        ? `<span class="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+               <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${pulseBg} opacity-75"></span>
+               <span class="relative inline-flex rounded-full h-2.5 w-2.5 ${badgeColor}"></span>
+           </span>`
+        : `<span class="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+               <span class="relative inline-flex rounded-full h-2 w-2 ${badgeColor}"></span>
+           </span>`;
+
+    // SVG for a wifi client wrapped in custom responsive container
     const svgIcon = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" class="w-7 h-7 drop-shadow-md">
-        <path d="M12 21a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM12 15a4 4 0 0 0-3.8 2.8c-.1.4.1.8.5.9.4.1.8-.1.9-.5A2.5 2.5 0 0 1 12 16.5c1.1 0 2.1.7 2.4 1.7.1.4.5.6.9.5.4-.1.6-.5.5-.9A4 4 0 0 0 12 15zm0-6a10 10 0 0 0-9.2 6.1c-.2.4 0 .8.4.9.4.2.8 0 .9-.4A8.5 8.5 0 0 1 12 10.5c3.8 0 7.2 2.5 8 5.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A10 10 0 0 0 12 9zm0-6a16 16 0 0 0-9.9 3.3c-.3.3-.3.8 0 1.1.3.3.8.3 1.1 0A14.5 14.5 0 0 1 12 4.5c6.5 0 12.3 4.2 13.5 10.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A16 16 0 0 0 12 3z"/>
-    </svg>`;
+    <div class="relative p-0.5 flex items-center justify-center">
+        ${pulseElement}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" class="w-7 h-7 drop-shadow-md">
+            <path d="M12 21a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM12 15a4 4 0 0 0-3.8 2.8c-.1.4.1.8.5.9.4.1.8-.1.9-.5A2.5 2.5 0 0 1 12 16.5c1.1 0 2.1.7 2.4 1.7.1.4.5.6.9.5.4-.1.6-.5.5-.9A4 4 0 0 0 12 15zm0-6a10 10 0 0 0-9.2 6.1c-.2.4 0 .8.4.9.4.2.8 0 .9-.4A8.5 8.5 0 0 1 12 10.5c3.8 0 7.2 2.5 8 5.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A10 10 0 0 0 12 9zm0-6a16 16 0 0 0-9.9 3.3c-.3.3-.3.8 0 1.1.3.3.8.3 1.1 0A14.5 14.5 0 0 1 12 4.5c6.5 0 12.3 4.2 13.5 10.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A16 16 0 0 0 12 3z"/>
+        </svg>
+    </div>`;
 
     return L.divIcon({
         className: 'custom-customer-icon',
-        html: `<div class="flex items-center justify-center">${svgIcon}</div>`,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
-        popupAnchor: [0, -14]
+        html: svgIcon,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+        popupAnchor: [0, -16]
     });
 };
 
@@ -400,8 +419,15 @@ onMounted(async () => {
 
     // Map Init (Kepanjen default center)
     map = leaflet.map('network-map-container', { doubleClickZoom: false }).setView([-8.130000, 112.570000], 14);
-    leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+    const isDarkMode = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
+    const tileUrl = isDarkMode 
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' 
+        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+
+    leaflet.tileLayer(tileUrl, {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
     }).addTo(map);
 
     // Auto-fit Bounds if coordinates exist
