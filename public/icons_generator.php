@@ -1,26 +1,35 @@
 <?php
-$sourcePath = 'C:/Users/SUJITO/.gemini/antigravity/brain/97ddddbd-1224-4ef0-abc0-d228cd39038c/app_icon_512_1784213106380.png';
-$targetDir = 'd:/new project/public/icons/';
+$sourcePath = __DIR__ . '/images/logo.jpg';
+$targetDir = __DIR__ . '/icons/';
 
 if (!file_exists($targetDir)) {
     mkdir($targetDir, 0755, true);
 }
 
-// Copy to 512x512
-copy($sourcePath, $targetDir . 'icon-512.png');
+$imgString = file_get_contents($sourcePath);
+$src = imagecreatefromstring($imgString);
+if ($src === false) {
+    die("Failed to load source image");
+}
 
-// Resize to 192x192
-$src = imagecreatefrompng($sourcePath);
-$dst = imagecreatetruecolor(192, 192);
+$srcWidth = imagesx($src);
+$srcHeight = imagesy($src);
 
-// preserve transparency
-imagealphablending($dst, false);
-imagesavealpha($dst, true);
+// Generate 512x512
+$dst512 = imagecreatetruecolor(512, 512);
+imagealphablending($dst512, false);
+imagesavealpha($dst512, true);
+imagecopyresampled($dst512, $src, 0, 0, 0, 0, 512, 512, $srcWidth, $srcHeight);
+imagepng($dst512, $targetDir . 'icon-512.png');
+imagedestroy($dst512);
 
-imagecopyresampled($dst, $src, 0, 0, 0, 0, 192, 192, 512, 512);
-imagepng($dst, $targetDir . 'icon-192.png');
+// Generate 192x192
+$dst192 = imagecreatetruecolor(192, 192);
+imagealphablending($dst192, false);
+imagesavealpha($dst192, true);
+imagecopyresampled($dst192, $src, 0, 0, 0, 0, 192, 192, $srcWidth, $srcHeight);
+imagepng($dst192, $targetDir . 'icon-192.png');
+imagedestroy($dst192);
 
 imagedestroy($src);
-imagedestroy($dst);
-
 echo "Icons generated successfully!";
