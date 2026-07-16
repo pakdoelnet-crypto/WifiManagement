@@ -288,4 +288,14 @@ function tail_file($filepath, $lines = 10) {
     return implode("\n", array_slice(explode("\n", $data), -$lines));
 }
 
+Route::get('/debug-git-status', function () {
+    $output = [];
+    exec('cd /var/www/pakdoelnet && git log -n 5 --oneline 2>&1', $output);
+    exec('cd /var/www/pakdoelnet && git status 2>&1', $output);
+    return response()->json([
+        'status' => 'success',
+        'git_output' => $output
+    ]);
+});
+
 require __DIR__.'/auth.php';
