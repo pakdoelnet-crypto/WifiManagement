@@ -54,8 +54,8 @@ class TrafficController extends Controller
             ];
         }
 
-        // Top Users: query online sessions and map random usage
-        $onlineSessions = PppActiveSession::limit(5)->get();
+        // Top Users: query all online sessions and map random usage
+        $onlineSessions = PppActiveSession::all();
         foreach ($onlineSessions as $session) {
             $topUsers[] = [
                 'username' => $session->pppoe_username,
@@ -89,7 +89,7 @@ class TrafficController extends Controller
             'download_mbps' => round($totalRx / 1048576, 2),
             'upload_mbps' => round($totalTx / 1048576, 2),
             'top_routers' => array_slice($topRouters, 0, 5),
-            'top_users' => array_slice($topUsers, 0, 5),
+            'top_users' => $topUsers,
             'bandwidth_today_gb' => round(rand(120, 250), 1),
         ]);
     }

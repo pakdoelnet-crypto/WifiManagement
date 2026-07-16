@@ -186,8 +186,8 @@ const getSparklinePoints = (arr, max = 50) => {
 
                     <!-- Top Users -->
                     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                        <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-4">Top 5 User Aktif (Realtime)</h3>
-                        <div class="space-y-3">
+                        <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-4">Pelanggan Aktif Online (Realtime)</h3>
+                        <div class="space-y-3 max-h-[350px] overflow-y-auto pr-1">
                             <div v-for="(user, idx) in stats.top_users" :key="idx" class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/60 rounded-xl border border-gray-100 dark:border-gray-700/50">
                                 <div>
                                     <div class="text-xs font-bold text-gray-900 dark:text-gray-100">{{ user.username }}</div>
