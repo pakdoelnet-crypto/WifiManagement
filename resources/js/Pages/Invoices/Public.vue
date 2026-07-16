@@ -118,129 +118,68 @@ const printInvoice = () => {
         <!-- Invoice Card -->
         <div
             id="invoice-capture-card"
-            class="bg-white p-8 w-full max-w-2xl shadow-xl border border-slate-200 text-slate-800 font-sans leading-normal relative overflow-hidden rounded-2xl"
-            style="min-height: 750px; color: #1e293b; background-color: #ffffff; border-color: #e2e8f0;"
+            class="bg-white p-8 w-full max-w-md shadow-xl border border-slate-200 text-slate-800 font-sans leading-normal relative overflow-hidden rounded-3xl mx-auto flex flex-col items-center"
+            style="color: #1e293b; background-color: #ffffff; border-color: #e2e8f0;"
         >
-            <!-- Watermark -->
-            <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
-                <span class="text-7xl font-extrabold rotate-45 tracking-widest uppercase">PAK DOEL NET</span>
+            <!-- Title -->
+            <div class="text-center w-full mt-4">
+                <h1 class="text-3xl font-black text-slate-900 tracking-wider">PAK DOEL.NET</h1>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-3">INVOICE TAGIHAN</p>
+                <div class="border-t border-slate-100 my-5"></div>
             </div>
 
-            <!-- Header -->
-            <div class="flex items-start justify-between border-b-2 border-slate-100 pb-6 mb-6">
-                <div class="space-y-2">
-                    <div class="flex items-center gap-2">
-                        <img src="/images/logo.jpg" alt="PAK DOEL NET" class="h-9 w-9 rounded-full object-cover shrink-0 shadow-sm" />
-                        <span class="text-xl font-black text-slate-900 tracking-wider">PAK DOEL NET</span>
-                    </div>
-                    <div class="text-[10px] text-slate-500 space-y-0.5">
-                        <p>RTRW Net Internet Service Provider</p>
-                        <p>Kepanjen, Kabupaten Malang, Jawa Timur</p>
-                        <p>WhatsApp: 0812-3456-7890 | Email: support@pakdoel.net</p>
-                    </div>
+            <!-- Invoice Details (No. Invoice, Tanggal) -->
+            <div class="w-full space-y-4">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-400 font-medium">No. Invoice</span>
+                    <span class="font-bold text-slate-950 font-mono">{{ invoice.invoice_number }}</span>
                 </div>
-                <div class="text-right space-y-1">
-                    <h1 class="text-2xl font-black text-indigo-600 uppercase tracking-widest">NO. NOTA</h1>
-                    <p class="font-mono text-xs font-bold text-slate-800">{{ invoice.invoice_number }}</p>
-                    <div class="inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider mt-2"
-                         :style="[
-                             invoice.status === 'paid'
-                                 ? { backgroundColor: '#e6fffa', color: '#047481' }
-                                 : (invoice.status === 'unpaid' ? { backgroundColor: '#fffaf0', color: '#b7791f' } : { backgroundColor: '#fff5f5', color: '#c53030' })
-                         ]"
-                    >
-                        {{ invoice.status === 'paid' ? 'LUNAS' : (invoice.status === 'unpaid' ? 'BELUM LUNAS' : 'TERLAMBAT') }}
-                    </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-400 font-medium">Tanggal</span>
+                    <span class="font-bold text-slate-950">{{ formatDate(invoice.created_at) }}</span>
                 </div>
+                <div class="border-t border-slate-100 my-5"></div>
             </div>
 
-            <!-- Customer & Info Grid -->
-            <div class="grid grid-cols-2 gap-8 mb-8 text-xs">
-                <div>
-                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Ditagih Kepada:</h3>
-                    <div class="space-y-1">
-                        <p class="font-bold text-slate-900 text-sm">{{ invoice.customer ? invoice.customer.name : 'Pelanggan Terhapus' }}</p>
-                        <p class="text-slate-600 line-clamp-2">{{ invoice.customer ? invoice.customer.address : '-' }}</p>
-                        <p class="text-slate-600">WhatsApp: {{ invoice.customer ? invoice.customer.whatsapp : '-' }}</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Rincian Periode & Tanggal:</h3>
-                    <div class="space-y-1 text-slate-600">
-                        <p><span class="font-semibold text-slate-500">Periode Layanan:</span> <span class="font-bold text-slate-900">{{ formatPeriod(invoice.periode) }}</span></p>
-                        <p><span class="font-semibold text-slate-500">Tanggal Terbit:</span> {{ formatDate(invoice.created_at) }}</p>
-                        <p><span class="font-semibold text-slate-500">Jatuh Tempo:</span> <span class="font-bold text-slate-900">{{ formatDate(invoice.due_date) }}</span></p>
-                    </div>
-                </div>
+            <!-- Customer -->
+            <div class="w-full mb-5">
+                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-1">PELANGGAN</h3>
+                <p class="text-xl font-extrabold text-slate-950">{{ invoice.customer ? invoice.customer.name : 'Pelanggan Terhapus' }}</p>
             </div>
 
-            <!-- Details Table -->
-            <div class="border border-slate-100 rounded-xl overflow-hidden mb-8 text-xs">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold">
-                            <th class="px-4 py-3">Deskripsi Layanan</th>
-                            <th class="px-4 py-3 text-right">Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <tr>
-                            <td class="px-4 py-4">
-                                <p class="font-bold text-slate-900">
-                                    {{ invoice.customer && invoice.customer.package ? invoice.customer.package.name : 'Paket Layanan Internet' }}
-                                </p>
-                                <p class="text-[10px] text-slate-400">Bulanan RTRW Net internet berlangganan</p>
-                            </td>
-                            <td class="px-4 py-4 text-right font-bold text-slate-900">
-                                {{ formatRupiah(invoice.amount) }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- Billing Month -->
+            <div class="w-full mb-5">
+                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-1">UNTUK BULAN</h3>
+                <p class="text-xl font-extrabold text-slate-950">{{ formatPeriod(invoice.periode) }}</p>
             </div>
 
-            <!-- Summary & Payment Info Grid -->
-            <div class="grid grid-cols-2 gap-8 mb-8 text-xs">
-                <div>
-                    <div v-if="invoice.status === 'paid' && invoice.payment" class="bg-slate-50 p-4 rounded-xl space-y-1.5 border border-slate-100">
-                        <h4 class="font-bold text-slate-900 text-[10px] uppercase tracking-wider">Informasi Pelunasan:</h4>
-                        <p class="text-slate-600"><span class="font-medium text-slate-400">Tgl Bayar:</span> {{ formatDate(invoice.payment.payment_date) }}</p>
-                        <p class="text-slate-600"><span class="font-medium text-slate-400">Metode:</span> {{ invoice.payment.payment_method }}</p>
-                        <p v-if="invoice.payment.notes" class="text-slate-600"><span class="font-medium text-slate-400">Catatan:</span> {{ invoice.payment.notes }}</p>
-                    </div>
-                    <div v-else class="bg-rose-50/50 p-4 rounded-xl border border-rose-100 text-rose-800 space-y-1 flex flex-col justify-center min-h-[90px]">
-                        <p class="font-bold uppercase tracking-wider text-[10px]">Peringatan Pembayaran:</p>
-                        <p class="text-[10px] leading-relaxed">Silakan lakukan transfer atau bayar tunai ke loket resmi RTRW Net sebelum tanggal jatuh tempo berakhir demi kelancaran internet Anda.</p>
-                    </div>
-                </div>
+            <!-- Amount to Pay -->
+            <div class="w-full mb-6">
+                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-1">JUMLAH BAYAR</h3>
+                <p class="text-3xl font-black text-emerald-600">{{ formatRupiah(invoice.total_amount || invoice.amount) }}</p>
+            </div>
 
-                <div class="space-y-2 text-right">
-                    <div class="flex justify-between text-slate-600">
-                        <span>Biaya Paket:</span>
-                        <span>{{ formatRupiah(invoice.amount) }}</span>
-                    </div>
-                    <div class="flex justify-between text-slate-600">
-                        <span>Denda Keterlambatan (+):</span>
-                        <span>{{ formatRupiah(invoice.penalty_amount) }}</span>
-                    </div>
-                    <div class="flex justify-between text-slate-600">
-                        <span>Diskon Potongan (-):</span>
-                        <span>{{ formatRupiah(invoice.discount_amount) }}</span>
-                    </div>
-                    <div class="border-t-2 border-slate-100 pt-2 flex justify-between font-black text-slate-900 text-sm">
-                        <span class="text-indigo-600 text-xs">TOTAL BAYAR:</span>
-                        <span class="text-lg text-indigo-600">{{ formatRupiah(invoice.total_amount || invoice.amount) }}</span>
-                    </div>
+            <!-- Status Pill/Card -->
+            <div class="w-full mb-10 text-center">
+                <div 
+                    class="py-3 px-6 rounded-2xl font-bold uppercase tracking-wider text-sm text-center"
+                    :style="[
+                        invoice.status === 'paid'
+                            ? { backgroundColor: '#ecfdf5', color: '#059669' }
+                            : (invoice.status === 'unpaid' ? { backgroundColor: '#fffbeb', color: '#d97706' } : { backgroundColor: '#fef2f2', color: '#dc2626' })
+                    ]"
+                >
+                    STATUS: {{ invoice.status === 'paid' ? 'LUNAS' : (invoice.status === 'unpaid' ? 'BELUM LUNAS' : 'TERLAMBAT') }}
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div class="border-t border-slate-100 pt-6 mt-auto flex items-center justify-between text-[10px] text-slate-400">
-                <div>
-                    <p>Dicetak pada: {{ formatDate(new Date()) }}</p>
-                </div>
-                <div class="text-right">
-                    <p>Invoice ini dibuat otomatis oleh sistem PAK DOEL NET</p>
+            <!-- Footer Notes -->
+            <div class="w-full text-center space-y-2 mt-auto text-xs text-slate-400">
+                <p class="italic">Simpan bukti ini sebagai tanda terima sah.</p>
+                <p>Terima kasih atas pembayarannya.</p>
+                <div class="pt-6 text-[9px] text-slate-300 space-y-1">
+                    <p>Dicetak pada: {{ formatDate(new Date()) }} {{ new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }}</p>
+                    <p class="font-bold tracking-widest">© 2026 PAK DOEL.NET</p>
                 </div>
             </div>
         </div>
