@@ -247,8 +247,8 @@ class DashboardController extends Controller
         // Fallback/Simulated live throughput for demo or offline router
         return response()->json([
             'success' => true,
-            'rx' => rand(1500000, 8500000), // 1.5 - 8.5 Mbps
-            'tx' => rand(500000, 3500000),  // 0.5 - 3.5 Mbps
+            'rx' => rand(35000000, 55000000), // 35 - 55 Mbps (matching ~41.5 Mbps)
+            'tx' => rand(2000000, 5500000),   // 2.0 - 5.5 Mbps (matching ~3.5 Mbps)
         ]);
     }
 }

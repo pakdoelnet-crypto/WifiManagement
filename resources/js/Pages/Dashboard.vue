@@ -85,11 +85,11 @@ const trafficSeries = computed(() => [
 const initMockTrafficData = () => {
     const now = new Date();
     for (let i = 19; i >= 0; i--) {
-        const time = new Date(now.getTime() - i * 3000);
+        const time = new Date(now.getTime() - i * 1000);
         const timeStr = time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         trafficCategories.value.push(timeStr);
-        rxSeriesData.value.push(parseFloat((Math.random() * 5 + 2).toFixed(2))); // 2 - 7 Mbps
-        txSeriesData.value.push(parseFloat((Math.random() * 2 + 0.5).toFixed(2))); // 0.5 - 2.5 Mbps
+        rxSeriesData.value.push(parseFloat((Math.random() * 20 + 35).toFixed(2))); // 35 - 55 Mbps
+        txSeriesData.value.push(parseFloat((Math.random() * 3.5 + 2.0).toFixed(2))); // 2.0 - 5.5 Mbps
     }
 };
 
@@ -278,7 +278,7 @@ onMounted(() => {
     fetchRouterResources();
 
     // 3. Set polling intervals
-    trafficInterval = setInterval(pollActiveTraffic, 3000); // 3 seconds live poll
+    trafficInterval = setInterval(pollActiveTraffic, 1000); // 1 second live poll
     resourcesInterval = setInterval(fetchRouterResources, 5000); // 5 seconds resource updates
 });
 
