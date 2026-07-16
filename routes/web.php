@@ -186,14 +186,45 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
         return response()->json(['error' => 'Unauthorized'], 401);
     }
     $output = [];
+    
+    // 1. Configure git safe directory
+    exec('git config --global --add safe.directory /var/www/pakdoelnet 2>&1', $output);
+    
+    // 2. Recursively fix permissions for any files owned by www-data in .git
+    $gitPath = '/var/www/pakdoelnet/.git';
+    if (is_dir($gitPath)) {
+        try {
+            $myUid = function_exists('posix_getuid') ? posix_getuid() : getmyuid();
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($gitPath, RecursiveDirectoryIterator::SKIP_DOTS),
+                RecursiveIteratorIterator::SELF_FIRST
+            );
+            foreach ($iterator as $item) {
+                if ($item->getOwner() === $myUid) {
+                    @chmod($item->getPathname(), $item->isDir() ? 0775 : 0664);
+                }
+            }
+            @chmod($gitPath, 0775);
+        } catch (\Exception $e) {
+            $output[] = 'Permission fix warning: ' . $e->getMessage();
+        }
+    }
+
+    // 3. Execute Git deploy commands
     exec('cd /var/www/pakdoelnet && git stash 2>&1', $output);
     exec('cd /var/www/pakdoelnet && git fetch --all 2>&1', $output);
     exec('cd /var/www/pakdoelnet && git reset --hard origin/main 2>&1', $output);
     exec('cd /var/www/pakdoelnet && php artisan migrate --force 2>&1', $output);
     exec('cd /var/www/pakdoelnet && php artisan view:clear 2>&1', $output);
     exec('cd /var/www/pakdoelnet && php artisan cache:clear 2>&1', $output);
+    
+    // 4. Expose file ownership of .git/objects if fetch still fails
+    $gitObjectsOwner = [];
+    exec('ls -la /var/www/pakdoelnet/.git/objects 2>&1', $gitObjectsOwner);
+
     return response()->json([
         'success' => true,
+        'git_objects_owner' => $gitObjectsOwner,
         'output' => $output
     ]);
 });
