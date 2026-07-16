@@ -40,6 +40,23 @@ const updateClock = () => {
     realTimeClock.value = `${dayName}, ${day} ${monthName} ${year} - ${hours}:${minutes}:${seconds}`;
 };
 
+const deferredPrompt = ref(null);
+const showInstallBanner = ref(false);
+
+const triggerInstall = async () => {
+    if (!deferredPrompt.value) return;
+    deferredPrompt.value.prompt();
+    const { outcome } = await deferredPrompt.value.userChoice;
+    console.log(`User response to install prompt: ${outcome}`);
+    deferredPrompt.value = null;
+    showInstallBanner.value = false;
+};
+
+const dismissBanner = () => {
+    showInstallBanner.value = false;
+    sessionStorage.setItem('pwa_install_dismissed', 'true');
+};
+
 onMounted(() => {
     if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         isDark.value = true;
@@ -51,6 +68,21 @@ onMounted(() => {
 
     updateClock();
     setInterval(updateClock, 1000);
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt.value = e;
+        const isDismissed = sessionStorage.getItem('pwa_install_dismissed');
+        if (!isDismissed) {
+            showInstallBanner.value = true;
+        }
+    });
+
+    window.addEventListener('appinstalled', () => {
+        console.log('PAK DOEL NET app was installed successfully!');
+        showInstallBanner.value = false;
+        deferredPrompt.value = null;
+    });
 });
 
 const sidebarCategories = computed(() => {
@@ -419,5 +451,46 @@ const currentTitle = computed(() => {
                 <slot />
             </main>
         </div>
+
+        <!-- PWA Install Banner -->
+        <transition
+            enter-active-class="transform ease-out duration-300 transition"
+            enter-from-class="translate-y-10 opacity-0"
+            enter-to-class="translate-y-0 opacity-100"
+            leave-active-class="transition ease-in duration-200"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+        >
+            <div
+                v-if="showInstallBanner"
+                class="fixed bottom-6 right-6 left-6 md:left-auto md:w-96 bg-white/90 dark:bg-gray-800/95 backdrop-blur border border-indigo-100 dark:border-indigo-900/50 p-4 rounded-2xl shadow-2xl z-[9999] flex items-center justify-between gap-4 transition-colors"
+            >
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 shrink-0 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-900 dark:text-gray-150">Install PAK DOEL NET</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Jadikan aplikasi lebih cepat & bisa dibuka langsung dari HP.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button
+                        @click="dismissBanner"
+                        class="px-2.5 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/60 rounded-lg transition"
+                    >
+                        Nanti
+                    </button>
+                    <button
+                        @click="triggerInstall"
+                        class="px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition shadow-md shadow-indigo-600/10"
+                    >
+                        Install
+                    </button>
+                </div>
+            </div>
+        </transition>
     </div>
 </template>
