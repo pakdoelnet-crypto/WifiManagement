@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Traits\Auditable;
+use App\Traits\BelongsToTenant;
 
 class Invoice extends Model
 {
-    use Auditable;
+    use Auditable, BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'customer_id',
         'invoice_number',
         'amount',

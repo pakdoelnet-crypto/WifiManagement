@@ -5,12 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 use App\Traits\Auditable;
+use App\Traits\BelongsToTenant;
 
 class Router extends Model
 {
-    use Auditable;
+    use Auditable, BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'host',
         'port',

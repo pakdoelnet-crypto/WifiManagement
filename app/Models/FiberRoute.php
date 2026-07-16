@@ -5,12 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 use App\Traits\Auditable;
+use App\Traits\BelongsToTenant;
 
 class FiberRoute extends Model
 {
-    use Auditable;
+    use Auditable, BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'from_point_id',
         'to_point_id',
         'path_geojson',
