@@ -194,10 +194,13 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     exec('cd /var/www/pakdoelnet && php artisan cache:clear 2>&1', $output);
     $logOutput = [];
     exec('tail -n 50 /var/www/pakdoelnet/storage/logs/laravel.log 2>&1', $logOutput);
+    $dbPermissions = [];
+    exec('ls -la /var/www/pakdoelnet/database/ 2>&1', $dbPermissions);
     return response()->json([
         'success' => true,
         'db_connection' => env('DB_CONNECTION'),
         'db_database' => env('DB_DATABASE'),
+        'db_permissions' => $dbPermissions,
         'output' => $output,
         'logs' => $logOutput
     ]);
