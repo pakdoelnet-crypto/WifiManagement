@@ -37,10 +37,11 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const requestUrl = new URL(event.request.url);
 
-  // Bypass cache for POST requests, Inertia requests, and PHP/data routes
+  // Bypass cache for POST requests, Inertia requests, Vite build assets, and PHP/data routes
   if (
     event.request.method !== "GET" ||
     event.request.headers.has("X-Inertia") ||
+    requestUrl.pathname.startsWith("/build/") ||
     requestUrl.pathname.startsWith("/api") ||
     requestUrl.pathname.includes("/live") ||
     requestUrl.pathname.includes("/stats") ||
@@ -60,13 +61,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Stale-while-revalidate for static assets (Vite assets, icons, fonts)
+  // Stale-while-revalidate for static assets (icons, fonts, images)
   if (
-    requestUrl.pathname.startsWith("/build/") ||
     requestUrl.pathname.startsWith("/icons/") ||
     requestUrl.pathname.startsWith("/images/") ||
-    requestUrl.pathname.endsWith(".js") ||
-    requestUrl.pathname.endsWith(".css") ||
     requestUrl.pathname.endsWith(".ico") ||
     requestUrl.pathname.endsWith(".png") ||
     requestUrl.pathname.endsWith(".jpg") ||
