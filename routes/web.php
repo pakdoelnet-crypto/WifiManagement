@@ -192,9 +192,18 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     exec('cd /var/www/pakdoelnet && php artisan migrate --force 2>&1', $output);
     exec('cd /var/www/pakdoelnet && php artisan view:clear 2>&1', $output);
     exec('cd /var/www/pakdoelnet && php artisan cache:clear 2>&1', $output);
+    $logOutput = [];
+    exec('tail -n 50 /var/www/pakdoelnet/storage/logs/laravel.log 2>&1', $logOutput);
+    $reverbLogs = [];
+    exec('tail -n 50 /var/www/pakdoelnet/storage/logs/reverb.log 2>&1', $reverbLogs);
+    $supervisorStatus = [];
+    exec('sudo supervisorctl status 2>&1', $supervisorStatus);
     return response()->json([
         'success' => true,
-        'output' => $output
+        'supervisor_status' => $supervisorStatus,
+        'reverb_logs' => $reverbLogs,
+        'output' => $output,
+        'logs' => $logOutput
     ]);
 });
 
