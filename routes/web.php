@@ -197,10 +197,13 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     $reverbLogs = [];
     exec('tail -n 50 /var/www/pakdoelnet/storage/logs/reverb.log 2>&1', $reverbLogs);
     $supervisorStatus = [];
-    exec('sudo supervisorctl status 2>&1', $supervisorStatus);
+    exec('supervisorctl status 2>&1', $supervisorStatus);
+    $supervisorRestart = [];
+    exec('supervisorctl restart all 2>&1', $supervisorRestart);
     return response()->json([
         'success' => true,
         'supervisor_status' => $supervisorStatus,
+        'supervisor_restart' => $supervisorRestart,
         'reverb_logs' => $reverbLogs,
         'output' => $output,
         'logs' => $logOutput
