@@ -106,3 +106,10 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+
+// Handle skipWaiting message from client
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.action === "skipWaiting") {
+    self.skipWaiting();
+  }
+});
