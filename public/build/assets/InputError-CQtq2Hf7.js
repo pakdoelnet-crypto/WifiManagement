@@ -1,1 +1,0 @@
-import{R as e,W as t,h as n,j as r,u as i,v as a}from"./app-nxLnvamP.js";var o={class:`text-sm text-red-600 dark:text-red-400`},s={__name:`InputError`,props:{message:{type:String}},setup(s){return(c,l)=>e((r(),a(`div`,null,[n(`p`,o,t(s.message),1)],512)),[[i,s.message]])}};export{s as t};
