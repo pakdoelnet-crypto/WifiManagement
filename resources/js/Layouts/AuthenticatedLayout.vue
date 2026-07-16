@@ -271,7 +271,7 @@ const currentTitle = computed(() => {
 <template>
     <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex transition-colors duration-300">
         <!-- Sidebar Navigation (Desktop) -->
-        <aside :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0']" class="fixed inset-y-0 left-0 w-64 md:static md:w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700/50 flex flex-col z-40 transition-transform duration-300 md:transform-none">
+        <aside :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0']" class="fixed inset-y-0 left-0 w-64 lg:static lg:w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700/50 flex flex-col z-40 transition-transform duration-300 lg:transform-none">
             <!-- Brand Logo -->
             <div class="h-16 px-6 flex items-center border-b border-gray-200 dark:border-gray-700/50 gap-3 shrink-0">
                 <Link :href="route('dashboard')" class="flex items-center gap-2">
@@ -356,7 +356,7 @@ const currentTitle = computed(() => {
         <div
             v-if="sidebarOpen"
             @click="sidebarOpen = false"
-            class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-35 md:hidden transition-opacity duration-300"
+            class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-35 lg:hidden transition-opacity duration-300"
         ></div>
 
         <!-- Main Workspace Area -->
@@ -367,7 +367,7 @@ const currentTitle = computed(() => {
                 <div class="flex items-center gap-4">
                     <button
                         @click="sidebarOpen = !sidebarOpen"
-                        class="md:hidden p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        class="lg:hidden p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
