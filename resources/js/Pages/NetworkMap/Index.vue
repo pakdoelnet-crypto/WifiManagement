@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
@@ -20,6 +20,9 @@ const props = defineProps({
     packages: Array,
     canManage: Boolean,
 });
+
+const onlineUsernamesList = ref([...props.onlineUsernames]);
+const customersList = ref([...props.customers]);
 
 // Layer Toggles
 const showCustomers = ref(true);
@@ -106,7 +109,7 @@ const loadLeaflet = () => {
 
 // Custom Marker Creators
 const getCustomerIcon = (L, customer) => {
-    const isOnline = props.onlineUsernames.includes(customer.pppoe_username);
+    const isOnline = onlineUsernamesList.value.includes(customer.pppoe_username);
     let color = '#9CA3AF'; // grey offline
     if (customer.status === 'isolir' || customer.status === 'suspended') {
         color = '#EF4444'; // red isolir
@@ -287,13 +290,13 @@ const drawMapElements = () => {
 
     // 3. Draw Customers
     if (showCustomers.value) {
-        props.customers.forEach(cust => {
+        customersList.value.forEach(cust => {
             if (cust.lat && cust.lng) {
                 const marker = leaflet.marker([cust.lat, cust.lng], {
                     icon: getCustomerIcon(leaflet, cust)
                 }).addTo(map);
 
-                const isOnline = props.onlineUsernames.includes(cust.pppoe_username);
+                const isOnline = onlineUsernamesList.value.includes(cust.pppoe_username);
                 let statusBadge = '<span class="text-emerald-500 font-bold">Online</span>';
                 if (cust.status === 'isolir' || cust.status === 'suspended') {
                     statusBadge = '<span class="text-red-500 font-bold">Isolir</span>';
@@ -544,6 +547,33 @@ const submitCustomer = () => {
         }
     });
 };
+
+const fetchLiveMapStatus = async () => {
+    try {
+        const response = await axios.get(route('network-map.live'));
+        onlineUsernamesList.value = response.data.onlineUsernames;
+        
+        response.data.customers.forEach(c => {
+            const localCust = customersList.value.find(lc => lc.id === c.id);
+            if (localCust) {
+                localCust.status = c.status;
+            }
+        });
+        
+        drawMapElements();
+    } catch (e) {
+        console.error("Failed to poll map status:", e);
+    }
+};
+
+let mapIntervalId = null;
+onMounted(() => {
+    mapIntervalId = setInterval(fetchLiveMapStatus, 15000);
+});
+
+onUnmounted(() => {
+    if (mapIntervalId) clearInterval(mapIntervalId);
+});
 </script>
 
 <template>

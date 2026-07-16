@@ -79,6 +79,7 @@ Route::middleware('auth')->group(function () {
 
     // Network Map Routes
     Route::get('/network-map', [MapController::class, 'index'])->name('network-map.index');
+    Route::get('/network-map/live', [MapController::class, 'getLiveStatus'])->name('network-map.live');
 
     // Network Points API Routes
     Route::get('/network-points', [NetworkPointController::class, 'index'])->name('network-points.index');

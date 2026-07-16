@@ -36,4 +36,14 @@ class MapController extends Controller
             'canManage' => auth()->user()->hasAnyRole(['Super Admin', 'Owner', 'Admin']),
         ]);
     }
+
+    public function getLiveStatus()
+    {
+        $onlineUsernames = PppActiveSession::pluck('pppoe_username')->toArray();
+        $customers = Customer::select('id', 'pppoe_username', 'status')->get();
+        return response()->json([
+            'onlineUsernames' => $onlineUsernames,
+            'customers' => $customers
+        ]);
+    }
 }
