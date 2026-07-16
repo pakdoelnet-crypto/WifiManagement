@@ -33,15 +33,17 @@ class TrafficController extends Controller
             $rx = rand(1500000, 8500000); // Default simulated
             $tx = rand(500000, 3500000);  // Default simulated
             
-            try {
-                // Fetch ether1 traffic
-                $res = $connectionService->getInterfaceTraffic($router, 'ether1');
-                if ($res['success']) {
-                    $rx = $res['data']['rx'];
-                    $tx = $res['data']['tx'];
+            if ($router->status === 'online') {
+                try {
+                    // Fetch ether1 traffic
+                    $res = $connectionService->getInterfaceTraffic($router, 'ether1');
+                    if ($res['success']) {
+                        $rx = $res['data']['rx'];
+                        $tx = $res['data']['tx'];
+                    }
+                } catch (\Exception $e) {
+                    // ignore
                 }
-            } catch (\Exception $e) {
-                // ignore
             }
 
             $totalRx += $rx;
