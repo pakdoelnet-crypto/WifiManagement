@@ -419,10 +419,7 @@ onMounted(async () => {
 
     // Map Init (Kepanjen default center)
     map = leaflet.map('network-map-container', { doubleClickZoom: false }).setView([-8.130000, 112.570000], 14);
-    const isDarkMode = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
-    const tileUrl = isDarkMode 
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' 
-        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    const tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 
     leaflet.tileLayer(tileUrl, {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
