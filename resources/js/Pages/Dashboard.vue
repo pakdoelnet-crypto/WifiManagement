@@ -474,7 +474,7 @@ const customerChartSeries = computed(() => [
             </div>
 
             <!-- TUGAS 1.2: STAT CARDS DENGAN STYLE MOMON NMS -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
+            <div class="grid grid-cols-1 min-[450px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-5">
                 
                 <!-- Card 1: Hotspot Aktif -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex items-center gap-4 transition duration-300 hover:border-emerald-500/30">
@@ -486,7 +486,7 @@ const customerChartSeries = computed(() => [
                     </div>
                     <div class="space-y-0.5 min-w-0">
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Hotspot Aktif</span>
-                        <div class="text-3xl font-black text-emerald-500 leading-none">0</div>
+                        <div class="text-3xl font-black text-emerald-500 leading-none truncate">0</div>
                         <span class="text-[10px] text-slate-400 block truncate">Sesi aktif hotspot</span>
                     </div>
                 </div>
@@ -504,8 +504,8 @@ const customerChartSeries = computed(() => [
                             PPP Aktif
                             <span class="h-2 w-2 rounded-full bg-orange-500 animate-ping" v-if="liveOnlineCount > 0"></span>
                         </span>
-                        <div class="text-3xl font-black text-orange-500 leading-none">{{ liveOnlineCount }}</div>
-                        <span class="text-[10px] text-slate-400 block">Sesi PPPoE aktif</span>
+                        <div class="text-3xl font-black text-orange-500 leading-none truncate">{{ liveOnlineCount }}</div>
+                        <span class="text-[10px] text-slate-400 block truncate">Sesi PPPoE aktif</span>
                     </div>
                 </div>
 
@@ -519,8 +519,8 @@ const customerChartSeries = computed(() => [
                     </div>
                     <div class="space-y-0.5 min-w-0">
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Hari Ini</span>
-                        <div class="text-2xl font-black text-cyan-500 leading-none">{{ stats.paidInvoicesToday ? formatRupiah(stats.paidInvoicesToday) : 'Rp 0' }}</div>
-                        <span class="text-[10px] text-slate-400 block">Pendapatan hari ini</span>
+                        <div class="text-2xl font-black text-cyan-500 leading-none truncate">{{ stats.paidInvoicesToday ? formatRupiah(stats.paidInvoicesToday) : 'Rp 0' }}</div>
+                        <span class="text-[10px] text-slate-400 block truncate">Pendapatan hari ini</span>
                     </div>
                 </div>
 
@@ -534,8 +534,8 @@ const customerChartSeries = computed(() => [
                     </div>
                     <div class="space-y-0.5 min-w-0">
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bulan Ini</span>
-                        <div class="text-2xl font-black text-yellow-500 leading-none">{{ formatRupiah(stats.paidInvoicesThisMonth) }}</div>
-                        <span class="text-[10px] text-slate-400 block">Pendapatan bulan ini</span>
+                        <div class="text-2xl font-black text-yellow-500 leading-none truncate">{{ formatRupiah(stats.paidInvoicesThisMonth) }}</div>
+                        <span class="text-[10px] text-slate-400 block truncate">Pendapatan bulan ini</span>
                     </div>
                 </div>
 

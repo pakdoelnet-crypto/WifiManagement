@@ -387,7 +387,7 @@ const currentTitle = computed(() => {
                 <!-- Right Side: Clock, Theme, Settings -->
                 <div class="flex items-center space-x-3">
                     <!-- Real-time Clock Component -->
-                    <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 font-mono bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700/50 px-3 py-1.5 rounded-lg mr-2 transition-all">
+                    <div class="hidden sm:block text-xs font-semibold text-gray-500 dark:text-gray-400 font-mono bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700/50 px-3 py-1.5 rounded-lg mr-2 transition-all">
                         {{ realTimeClock }}
                     </div>
 
