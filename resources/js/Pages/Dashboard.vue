@@ -122,7 +122,10 @@ const trafficChartOptions = ref({
     },
     xaxis: {
         categories: trafficCategories.value,
+        tickAmount: 5,
         labels: {
+            rotate: 0,
+            hideOverlappingLabels: true,
             style: { colors: '#94a3b8' },
         },
         axisBorder: { show: false },
