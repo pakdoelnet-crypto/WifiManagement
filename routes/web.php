@@ -196,6 +196,8 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     exec('tail -n 50 /var/www/pakdoelnet/storage/logs/laravel.log 2>&1', $logOutput);
     return response()->json([
         'success' => true,
+        'db_connection' => env('DB_CONNECTION'),
+        'db_database' => env('DB_DATABASE'),
         'output' => $output,
         'logs' => $logOutput
     ]);
