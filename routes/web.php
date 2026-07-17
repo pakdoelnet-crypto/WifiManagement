@@ -220,12 +220,12 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     exec('cd /var/www/pakdoelnet && php artisan config:clear 2>&1', $output);
     exec('cd /var/www/pakdoelnet && php artisan cache:clear 2>&1', $output);
     
-    $sqliteFiles = [];
-    exec('find /var/www -name "*.sqlite*" 2>&1', $sqliteFiles);
+    $cacheDetails = [];
+    exec('ls -la /var/www/pakdoelnet/bootstrap/cache 2>&1', $cacheDetails);
 
     return response()->json([
         'success' => true,
-        'sqlite_files' => $sqliteFiles,
+        'cache_details' => $cacheDetails,
         'output' => $output
     ]);
 });
