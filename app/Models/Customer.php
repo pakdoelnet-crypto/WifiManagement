@@ -54,6 +54,7 @@ class Customer extends Model
                 $price = $package ? $package->price : 0;
 
                 \App\Models\Invoice::create([
+                    'tenant_id' => $customer->tenant_id,
                     'customer_id' => $customer->id,
                     'invoice_number' => $invoiceNumber,
                     'amount' => $price,

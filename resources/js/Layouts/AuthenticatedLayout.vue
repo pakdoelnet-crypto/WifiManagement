@@ -276,8 +276,8 @@ const currentTitle = computed(() => {
             <div class="h-16 px-6 flex items-center border-b border-gray-200 dark:border-gray-700/50 gap-3 shrink-0">
                 <Link :href="route('dashboard')" class="flex items-center gap-2">
                     <ApplicationLogo class="h-8 w-8 rounded-full object-cover shrink-0" />
-                    <span class="text-md font-bold tracking-wider bg-gradient-to-r from-indigo-600 to-emerald-600 dark:from-indigo-400 dark:to-emerald-400 bg-clip-text text-transparent">
-                        PAK DOEL NET
+                    <span class="text-md font-bold tracking-wider bg-gradient-to-r from-indigo-600 to-emerald-600 dark:from-indigo-400 dark:to-emerald-400 bg-clip-text text-transparent truncate max-w-[150px]">
+                        {{ $page.props.auth.user.tenant_name }}
                     </span>
                 </Link>
             </div>
@@ -346,7 +346,7 @@ const currentTitle = computed(() => {
                     </div>
                 </div>
                 <div class="pt-2 border-t border-gray-150 dark:border-gray-700/40 text-center text-[10px] text-gray-400 dark:text-gray-500 font-semibold tracking-wide">
-                    <div>© 2026 PAK DOEL NET</div>
+                    <div>© 2026 {{ $page.props.auth.user.tenant_name }}</div>
                     <div class="text-[9px] font-normal opacity-75 mt-0.5">v{{ $page.props.appVersion }}</div>
                 </div>
             </div>

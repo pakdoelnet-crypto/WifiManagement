@@ -67,6 +67,7 @@ class CustomerPortalController extends Controller
         }
 
         Ticket::create([
+            'tenant_id' => $customer->tenant_id,
             'ticket_number' => $ticketNumber,
             'customer_id' => $customer->id,
             'category' => $validated['category'],

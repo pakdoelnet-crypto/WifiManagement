@@ -40,7 +40,7 @@ const submit = () => {
                     </svg>
                 </div>
                 <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                    PAK DOEL NET
+                    {{ $page.props.tenant ? $page.props.tenant.nama_usaha : 'PAK DOEL NET' }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Silakan masuk untuk mengelola portal jaringan Anda.
@@ -151,7 +151,7 @@ const submit = () => {
 
         <!-- Footer Copyright -->
         <div class="mt-8 text-center text-xs text-gray-400 dark:text-gray-600">
-            &copy; 2026 PAK DOEL NET. All rights reserved.
+            &copy; 2026 {{ $page.props.tenant ? $page.props.tenant.nama_usaha : 'PAK DOEL NET' }}. All rights reserved.
         </div>
     </div>
 </template>

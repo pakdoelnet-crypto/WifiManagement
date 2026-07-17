@@ -14,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
+use App\Models\Tenant;
+
 class RegisteredUserController extends Controller
 {
     /**
@@ -32,24 +34,28 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
+            'nama_usaha' => 'required|string|max:255',
+            'subdomain' => 'required|string|lowercase|alpha_dash|max:255|unique:'.Tenant::class.',subdomain',
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $tenant = Tenant::create([
+            'nama_usaha' => $request->nama_usaha,
+            'subdomain' => $request->subdomain,
+            'status' => 'aktif',
+        ]);
+
         $user = User::create([
+            'tenant_id' => $tenant->id,
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
-        if ($user->email === 'pakdoelnet@gmail.com') {
-            $user->assignRole('Super Admin');
-        } else {
-            if (\Spatie\Permission\Models\Role::where('name', 'Customer Service')->exists()) {
-                $user->assignRole('Customer Service');
-            }
-        }
+        // Assign 'Super Admin' role to the creator of the new tenant
+        $user->assignRole('Super Admin');
 
         event(new Registered($user));
 

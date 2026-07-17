@@ -5,6 +5,8 @@ import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 
 const form = useForm({
+    nama_usaha: '',
+    subdomain: '',
     name: '',
     email: '',
     password: '',
@@ -42,6 +44,38 @@ const submit = () => {
             <form @submit.prevent="submit" class="mt-8 space-y-6">
                 <div class="space-y-4">
                     <div>
+                        <InputLabel for="nama_usaha" value="Nama Usaha (ISP/RT-RW Net)" class="text-gray-700 dark:text-gray-300 font-medium" />
+                        <TextInput
+                            id="nama_usaha"
+                            type="text"
+                            class="mt-1 block w-full"
+                            v-model="form.nama_usaha"
+                            required
+                            autofocus
+                            placeholder="Contoh: PAK DOEL NET"
+                        />
+                        <InputError class="mt-1.5" :message="form.errors.nama_usaha" />
+                    </div>
+
+                    <div>
+                        <InputLabel for="subdomain" value="Subdomain/Slug Akses" class="text-gray-700 dark:text-gray-300 font-medium" />
+                        <div class="flex items-stretch mt-1">
+                            <TextInput
+                                id="subdomain"
+                                type="text"
+                                class="block w-full rounded-r-none border-r-0"
+                                v-model="form.subdomain"
+                                required
+                                placeholder="namausaha"
+                            />
+                            <span class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs font-mono">
+                                .pakdoelnet
+                            </span>
+                        </div>
+                        <InputError class="mt-1.5" :message="form.errors.subdomain" />
+                    </div>
+
+                    <div>
                         <InputLabel for="name" value="Nama Lengkap" class="text-gray-700 dark:text-gray-300 font-medium" />
                         <TextInput
                             id="name"
@@ -49,7 +83,6 @@ const submit = () => {
                             class="mt-1 block w-full"
                             v-model="form.name"
                             required
-                            autofocus
                             autocomplete="name"
                             placeholder="Nama Lengkap"
                         />
