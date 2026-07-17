@@ -220,12 +220,21 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     exec('cd /var/www/pakdoelnet && php artisan config:clear 2>&1', $output);
     exec('cd /var/www/pakdoelnet && php artisan cache:clear 2>&1', $output);
     
-    $logWritable = is_writable('/var/www/pakdoelnet/storage/logs/laravel.log');
-    $logOwner = file_exists('/var/www/pakdoelnet/storage/logs/laravel.log') ? fileowner('/var/www/pakdoelnet/storage/logs/laravel.log') : 'none';
-    $logsDirWritable = is_writable('/var/www/pakdoelnet/storage/logs');
-    
+    $dbFile = '/var/www/pakdoelnet/database/database.sqlite';
+    $dbFileDetails = [];
+    if (file_exists($dbFile)) {
+        exec('ls -la ' . $dbFile . ' 2>&1', $dbFileDetails);
+    } else {
+        $dbFileDetails[] = 'File does not exist';
+    }
+
+    $migrationStatus = [];
+    exec('cd /var/www/pakdoelnet && php artisan migrate:status 2>&1', $migrationStatus);
+
     return response()->json([
         'success' => true,
+        'db_file' => $dbFileDetails,
+        'migrations' => $migrationStatus,
         'output' => $output
     ]);
 });
