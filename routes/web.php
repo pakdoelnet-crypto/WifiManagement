@@ -257,6 +257,14 @@ Route::get('/debug-error', function() {
     }
 });
 
+Route::get('/debug-find', function() {
+    $files = [];
+    exec('find /var/www -name "*.sqlite*" 2>&1', $files);
+    return response()->json([
+        'sqlite_files' => $files
+    ]);
+});
+
 Route::get('/debug-connection', function() {
     $routers = \App\Models\Router::all();
     $results = [];
