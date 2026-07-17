@@ -235,15 +235,12 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
         }
     }
 
-    $psOutput = [];
-    exec('ps aux | grep php 2>&1', $psOutput);
-
-    $nginxLogs = [];
-    exec('tail -n 50 /var/log/nginx/error.log 2>&1', $nginxLogs);
+    $phpServices = [];
+    exec('systemctl list-units --type=service | grep php 2>&1', $phpServices);
 
     return response()->json([
         'success' => true,
-        'nginx_error_logs' => $nginxLogs,
+        'php_services' => $phpServices,
         'cache_details' => $cacheDetails,
         'processes' => $psOutput,
         'output' => $output
