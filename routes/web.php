@@ -241,6 +241,21 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     ]);
 });
 
+Route::get('/debug-error', function() {
+    try {
+        $controller = new \App\Http\Controllers\Auth\AuthenticatedSessionController();
+        $res = $controller->create();
+        return "Success render! " . get_class($res);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+    }
+});
+
 Route::get('/debug-connection', function() {
     $routers = \App\Models\Router::all();
     $results = [];
