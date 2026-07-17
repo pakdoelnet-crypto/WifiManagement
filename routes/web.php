@@ -235,22 +235,18 @@ Route::get('/debug-error', function() {
         $dbPathConfig = config('database.connections.sqlite.database');
         $dbPathResolved = database_path('database.sqlite');
         $dbConfigExists = file_exists($dbPathConfig) ? 'yes (size: ' . filesize($dbPathConfig) . ')' : 'no';
-        $dbResolvedExists = file_exists($dbPathResolved) ? 'yes (size: ' . filesize($dbPathResolved) . ')' : 'no';
         
-        // Also run a test query to see if we can read sqlite_master
-        $tables = [];
+        $sqliteMaster = [];
         try {
-            $tables = \Illuminate\Support\Facades\DB::select("SELECT name FROM sqlite_master WHERE type='table'");
+            $sqliteMaster = \Illuminate\Support\Facades\DB::select("SELECT * FROM sqlite_master");
         } catch (\Throwable $e) {
-            $tables = 'Error: ' . $e->getMessage();
+            $sqliteMaster = 'Error: ' . $e->getMessage();
         }
 
         return response()->json([
             'db_path_config' => $dbPathConfig,
-            'db_path_resolved' => $dbPathResolved,
             'db_config_exists' => $dbConfigExists,
-            'db_resolved_exists' => $dbResolvedExists,
-            'tables' => $tables
+            'sqlite_master' => $sqliteMaster
         ]);
     } catch (\Throwable $e) {
         return response()->json([
