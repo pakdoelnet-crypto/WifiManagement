@@ -224,25 +224,9 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     $logOwner = file_exists('/var/www/pakdoelnet/storage/logs/laravel.log') ? fileowner('/var/www/pakdoelnet/storage/logs/laravel.log') : 'none';
     $logsDirWritable = is_writable('/var/www/pakdoelnet/storage/logs');
     
-    $dbFile = '/var/www/pakdoelnet/database/database.sqlite';
-    $dbFileDetails = [];
-    if (file_exists($dbFile)) {
-        exec('ls -la ' . $dbFile . ' 2>&1', $dbFileDetails);
-    } else {
-        $dbFileDetails[] = 'File does not exist';
-    }
-
-    $dbDirDetails = [];
-    exec('ls -la /var/www/pakdoelnet/database 2>&1', $dbDirDetails);
-
-    $psOutput = [];
-    exec('ps aux | grep php 2>&1', $psOutput);
-
     return response()->json([
         'success' => true,
-        'db_file' => $dbFileDetails,
-        'db_dir' => $dbDirDetails,
-        'processes' => $psOutput
+        'output' => $output
     ]);
 });
 
