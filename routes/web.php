@@ -223,8 +223,12 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     $gitObjectsOwner = [];
     exec('ls -la /var/www/pakdoelnet/.git/objects 2>&1', $gitObjectsOwner);
 
+    $logOutput = [];
+    exec('tail -n 50 /var/www/pakdoelnet/storage/logs/laravel.log 2>&1', $logOutput);
+
     return response()->json([
         'success' => true,
+        'logs' => $logOutput,
         'output' => $output
     ]);
 });
