@@ -225,10 +225,13 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
 
     $logOutput = [];
     exec('tail -n 50 /var/www/pakdoelnet/storage/logs/laravel.log 2>&1', $logOutput);
+    $nginxLogs = [];
+    exec('tail -n 50 /var/log/nginx/error.log 2>&1', $nginxLogs);
 
     return response()->json([
         'success' => true,
         'logs' => $logOutput,
+        'nginx_logs' => $nginxLogs,
         'output' => $output
     ]);
 });
