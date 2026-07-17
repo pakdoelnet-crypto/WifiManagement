@@ -223,9 +223,13 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     $cacheDetails = [];
     exec('ls -la /var/www/pakdoelnet/bootstrap/cache 2>&1', $cacheDetails);
 
+    $psOutput = [];
+    exec('ps aux | grep php 2>&1', $psOutput);
+
     return response()->json([
         'success' => true,
         'cache_details' => $cacheDetails,
+        'processes' => $psOutput,
         'output' => $output
     ]);
 });
