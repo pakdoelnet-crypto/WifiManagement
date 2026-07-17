@@ -219,19 +219,29 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     exec('cd /var/www/pakdoelnet && php artisan config:clear 2>&1', $output);
     exec('cd /var/www/pakdoelnet && php artisan cache:clear 2>&1', $output);
     
-    // 4. Expose file ownership of .git/objects if fetch still fails
-    $gitObjectsOwner = [];
-    exec('ls -la /var/www/pakdoelnet/.git/objects 2>&1', $gitObjectsOwner);
+    $logWritable = is_writable('/var/www/pakdoelnet/storage/logs/laravel.log');
+    $logOwner = file_exists('/var/www/pakdoelnet/storage/logs/laravel.log') ? fileowner('/var/www/pakdoelnet/storage/logs/laravel.log') : 'none';
+    $logsDirWritable = is_writable('/var/www/pakdoelnet/storage/logs');
+    
+    // Attempt to write a manual test log
+    $testLogWrite = 'failed';
+    try {
+        \Illuminate\Support\Facades\Log::info('Webhook manual log test');
+        $testLogWrite = 'success';
+    } catch (\Exception $e) {
+        $testLogWrite = 'exception: ' . $e->getMessage();
+    }
 
     $logOutput = [];
     exec('tail -n 50 /var/www/pakdoelnet/storage/logs/laravel.log 2>&1', $logOutput);
-    $nginxLogs = [];
-    exec('tail -n 50 /var/log/nginx/error.log 2>&1', $nginxLogs);
 
     return response()->json([
         'success' => true,
+        'logs_dir_writable' => $logsDirWritable,
+        'log_file_writable' => $logWritable,
+        'log_file_owner' => $logOwner,
+        'test_log_write' => $testLogWrite,
         'logs' => $logOutput,
-        'nginx_logs' => $nginxLogs,
         'output' => $output
     ]);
 });
