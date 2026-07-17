@@ -216,6 +216,7 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     exec('cd /var/www/pakdoelnet && git reset --hard origin/main 2>&1', $output);
     exec('cd /var/www/pakdoelnet && php artisan migrate --force 2>&1', $output);
     exec('cd /var/www/pakdoelnet && php artisan view:clear 2>&1', $output);
+    exec('cd /var/www/pakdoelnet && php artisan config:clear 2>&1', $output);
     exec('cd /var/www/pakdoelnet && php artisan cache:clear 2>&1', $output);
     
     // 4. Expose file ownership of .git/objects if fetch still fails
@@ -224,6 +225,11 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
 
     return response()->json([
         'success' => true,
+        'google_config' => [
+            'client_id' => config('services.google.client_id'),
+            'client_secret_exists' => !empty(config('services.google.client_secret')),
+            'redirect' => config('services.google.redirect'),
+        ],
         'git_objects_owner' => $gitObjectsOwner,
         'output' => $output
     ]);
