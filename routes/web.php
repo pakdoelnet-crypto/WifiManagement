@@ -225,12 +225,6 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
 
     return response()->json([
         'success' => true,
-        'google_config' => [
-            'client_id' => config('services.google.client_id'),
-            'client_secret_exists' => !empty(config('services.google.client_secret')),
-            'redirect' => config('services.google.redirect'),
-        ],
-        'git_objects_owner' => $gitObjectsOwner,
         'output' => $output
     ]);
 });
