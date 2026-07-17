@@ -230,34 +230,6 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     ]);
 });
 
-Route::get('/debug-error', function() {
-    try {
-        return response()->json([
-            'env_db_connection' => env('DB_CONNECTION'),
-            'env_db_database' => env('DB_DATABASE'),
-            'config_db_default' => config('database.default'),
-            'config_sqlite' => config('database.connections.sqlite'),
-            'server_db_database' => $_SERVER['DB_DATABASE'] ?? 'not set',
-            'env_global_db_database' => $_ENV['DB_DATABASE'] ?? 'not set',
-            'get_env_db_database' => getenv('DB_DATABASE'),
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'message' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine()
-        ]);
-    }
-});
-
-Route::get('/debug-find', function() {
-    $files = [];
-    exec('find /var/www -name "*.sqlite*" 2>&1', $files);
-    return response()->json([
-        'sqlite_files' => $files
-    ]);
-});
-
 Route::get('/debug-connection', function() {
     $routers = \App\Models\Router::all();
     $results = [];
