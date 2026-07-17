@@ -186,6 +186,7 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
         return response()->json(['error' => 'Unauthorized'], 401);
     }
     $output = [];
+    putenv('HOME=/tmp');
     
     // 1. Configure git safe directory
     exec('git config --global --add safe.directory /var/www/pakdoelnet 2>&1', $output);
@@ -223,26 +224,15 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     $logOwner = file_exists('/var/www/pakdoelnet/storage/logs/laravel.log') ? fileowner('/var/www/pakdoelnet/storage/logs/laravel.log') : 'none';
     $logsDirWritable = is_writable('/var/www/pakdoelnet/storage/logs');
     
-    // Read and sanitize .env lines
-    $envLines = [];
-    if (file_exists('/var/www/pakdoelnet/.env')) {
-        $lines = file('/var/www/pakdoelnet/.env');
-        foreach ($lines as $line) {
-            if (stripos($line, 'password') !== false || stripos($line, 'secret') !== false || stripos($line, 'token') !== false) {
-                $parts = explode('=', $line, 2);
-                $envLines[] = $parts[0] . '=[HIDDEN]';
-            } else {
-                $envLines[] = trim($line);
-            }
-        }
-    }
+    $psOutput = [];
+    exec('ps aux | grep php 2>&1', $psOutput);
 
     return response()->json([
         'success' => true,
         'logs_dir_writable' => $logsDirWritable,
         'log_file_writable' => $logWritable,
         'log_file_owner' => $logOwner,
-        'env_file_contents' => $envLines
+        'processes' => $psOutput
     ]);
 });
 
