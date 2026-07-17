@@ -235,14 +235,8 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
         }
     }
 
-    $fpmServices = [];
-    exec('systemctl list-unit-files | grep -i fpm 2>&1', $fpmServices);
-
     return response()->json([
         'success' => true,
-        'fpm_services' => $fpmServices,
-        'cache_details' => $cacheDetails,
-        'processes' => $psOutput,
         'output' => $output
     ]);
 });
