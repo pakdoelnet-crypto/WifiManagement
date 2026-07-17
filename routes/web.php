@@ -237,17 +237,12 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
         }
     }
 
-    $logOutput = [];
-    exec('tail -n 50 /var/www/pakdoelnet/storage/logs/laravel.log 2>&1', $logOutput);
-
     return response()->json([
         'success' => true,
         'logs_dir_writable' => $logsDirWritable,
         'log_file_writable' => $logWritable,
         'log_file_owner' => $logOwner,
-        'env_file_contents' => $envLines,
-        'logs' => $logOutput,
-        'output' => $output
+        'env_file_contents' => $envLines
     ]);
 });
 
