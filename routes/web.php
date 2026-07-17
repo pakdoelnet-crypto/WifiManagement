@@ -223,6 +223,18 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     $cacheDetails = [];
     exec('ls -la /var/www/pakdoelnet/bootstrap/cache 2>&1', $cacheDetails);
 
+    // Automatically optimize .env for SQLite to prevent database locks
+    $envPath = '/var/www/pakdoelnet/.env';
+    if (file_exists($envPath)) {
+        $envContent = file_get_contents($envPath);
+        $original = $envContent;
+        $envContent = str_replace('SESSION_DRIVER=database', 'SESSION_DRIVER=file', $envContent);
+        $envContent = str_replace('CACHE_STORE=database', 'CACHE_STORE=file', $envContent);
+        if ($envContent !== $original) {
+            file_put_contents($envPath, $envContent);
+        }
+    }
+
     $psOutput = [];
     exec('ps aux | grep php 2>&1', $psOutput);
 
