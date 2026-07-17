@@ -232,15 +232,31 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
 
 Route::get('/debug-error', function() {
     try {
-        $controller = new \App\Http\Controllers\Auth\AuthenticatedSessionController();
-        $res = $controller->create();
-        return "Success render! " . get_class($res);
+        $dbPathConfig = config('database.connections.sqlite.database');
+        $dbPathResolved = database_path('database.sqlite');
+        $dbConfigExists = file_exists($dbPathConfig) ? 'yes (size: ' . filesize($dbPathConfig) . ')' : 'no';
+        $dbResolvedExists = file_exists($dbPathResolved) ? 'yes (size: ' . filesize($dbPathResolved) . ')' : 'no';
+        
+        // Also run a test query to see if we can read sqlite_master
+        $tables = [];
+        try {
+            $tables = \Illuminate\Support\Facades\DB::select("SELECT name FROM sqlite_master WHERE type='table'");
+        } catch (\Throwable $e) {
+            $tables = 'Error: ' . $e->getMessage();
+        }
+
+        return response()->json([
+            'db_path_config' => $dbPathConfig,
+            'db_path_resolved' => $dbPathResolved,
+            'db_config_exists' => $dbConfigExists,
+            'db_resolved_exists' => $dbResolvedExists,
+            'tables' => $tables
+        ]);
     } catch (\Throwable $e) {
         return response()->json([
             'message' => $e->getMessage(),
             'file' => $e->getFile(),
-            'line' => $e->getLine(),
-            'trace' => $e->getTraceAsString()
+            'line' => $e->getLine()
         ]);
     }
 });
