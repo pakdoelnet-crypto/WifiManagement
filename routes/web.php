@@ -223,13 +223,18 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     $logOwner = file_exists('/var/www/pakdoelnet/storage/logs/laravel.log') ? fileowner('/var/www/pakdoelnet/storage/logs/laravel.log') : 'none';
     $logsDirWritable = is_writable('/var/www/pakdoelnet/storage/logs');
     
-    // Attempt to write a manual test log
-    $testLogWrite = 'failed';
-    try {
-        \Illuminate\Support\Facades\Log::info('Webhook manual log test');
-        $testLogWrite = 'success';
-    } catch (\Exception $e) {
-        $testLogWrite = 'exception: ' . $e->getMessage();
+    // Read and sanitize .env lines
+    $envLines = [];
+    if (file_exists('/var/www/pakdoelnet/.env')) {
+        $lines = file('/var/www/pakdoelnet/.env');
+        foreach ($lines as $line) {
+            if (stripos($line, 'password') !== false || stripos($line, 'secret') !== false || stripos($line, 'token') !== false) {
+                $parts = explode('=', $line, 2);
+                $envLines[] = $parts[0] . '=[HIDDEN]';
+            } else {
+                $envLines[] = trim($line);
+            }
+        }
     }
 
     $logOutput = [];
@@ -240,7 +245,7 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
         'logs_dir_writable' => $logsDirWritable,
         'log_file_writable' => $logWritable,
         'log_file_owner' => $logOwner,
-        'test_log_write' => $testLogWrite,
+        'env_file_contents' => $envLines,
         'logs' => $logOutput,
         'output' => $output
     ]);
