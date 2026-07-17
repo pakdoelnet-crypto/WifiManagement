@@ -257,11 +257,19 @@ Route::get('/debug-error', function() {
 });
 
 Route::get('/debug-session', function() {
+    $envPath = '/var/www/pakdoelnet/.env';
+    $exists = file_exists($envPath) ? 'yes' : 'no';
+    $writable = is_writable($envPath) ? 'yes' : 'no';
+    $owner = file_exists($envPath) ? fileowner($envPath) : 'unknown';
+    $perms = file_exists($envPath) ? substr(sprintf('%o', fileperms($envPath)), -4) : 'unknown';
+
     return response()->json([
         'session_driver' => config('session.driver'),
         'cache_driver' => config('cache.default'),
-        'env_session_driver' => env('SESSION_DRIVER'),
-        'env_cache_store' => env('CACHE_STORE'),
+        'env_exists' => $exists,
+        'env_writable' => $writable,
+        'env_owner' => $owner,
+        'env_perms' => $perms,
     ]);
 });
 
