@@ -256,6 +256,15 @@ Route::get('/debug-error', function() {
     }
 });
 
+Route::get('/debug-session', function() {
+    return response()->json([
+        'session_driver' => config('session.driver'),
+        'cache_driver' => config('cache.default'),
+        'env_session_driver' => env('SESSION_DRIVER'),
+        'env_cache_store' => env('CACHE_STORE'),
+    ]);
+});
+
 Route::get('/debug-connection', function() {
     $routers = \App\Models\Router::all();
     $results = [];
