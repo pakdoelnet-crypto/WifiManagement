@@ -232,21 +232,14 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
 
 Route::get('/debug-error', function() {
     try {
-        $dbPathConfig = config('database.connections.sqlite.database');
-        $dbPathResolved = database_path('database.sqlite');
-        $dbConfigExists = file_exists($dbPathConfig) ? 'yes (size: ' . filesize($dbPathConfig) . ')' : 'no';
-        
-        $sqliteMaster = [];
-        try {
-            $sqliteMaster = \Illuminate\Support\Facades\DB::select("SELECT * FROM sqlite_master");
-        } catch (\Throwable $e) {
-            $sqliteMaster = 'Error: ' . $e->getMessage();
-        }
-
         return response()->json([
-            'db_path_config' => $dbPathConfig,
-            'db_config_exists' => $dbConfigExists,
-            'sqlite_master' => $sqliteMaster
+            'env_db_connection' => env('DB_CONNECTION'),
+            'env_db_database' => env('DB_DATABASE'),
+            'config_db_default' => config('database.default'),
+            'config_sqlite' => config('database.connections.sqlite'),
+            'server_db_database' => $_SERVER['DB_DATABASE'] ?? 'not set',
+            'env_global_db_database' => $_ENV['DB_DATABASE'] ?? 'not set',
+            'get_env_db_database' => getenv('DB_DATABASE'),
         ]);
     } catch (\Throwable $e) {
         return response()->json([
