@@ -113,14 +113,17 @@ const getCustomerIcon = (L, customer) => {
     let color = '#9CA3AF'; // grey offline
     let badgeColor = 'bg-gray-400';
     let pulseBg = '';
+    let shadowStyle = 'filter: drop-shadow(0 0 4px #9CA3AF);';
 
     if (customer.status === 'isolir' || customer.status === 'suspended') {
         color = '#EF4444'; // red isolir
         badgeColor = 'bg-red-500';
+        shadowStyle = 'filter: drop-shadow(0 0 6px #EF4444) drop-shadow(0 0 12px #EF4444);';
     } else if (isOnline) {
-        color = '#10B981'; // green online
-        badgeColor = 'bg-emerald-500';
-        pulseBg = 'bg-emerald-400';
+        color = '#00E5FF'; // cyan online glow!
+        badgeColor = 'bg-cyan-500';
+        pulseBg = 'bg-cyan-400';
+        shadowStyle = 'filter: drop-shadow(0 0 6px #00E5FF) drop-shadow(0 0 12px #00B0FF);';
     }
 
     // Live pulsing dot and outer ring if online
@@ -137,7 +140,7 @@ const getCustomerIcon = (L, customer) => {
     const svgIcon = `
     <div class="relative p-0.5 flex items-center justify-center">
         ${pulseElement}
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" class="w-7 h-7 drop-shadow-md">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" class="w-7 h-7" style="${shadowStyle}">
             <path d="M12 21a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM12 15a4 4 0 0 0-3.8 2.8c-.1.4.1.8.5.9.4.1.8-.1.9-.5A2.5 2.5 0 0 1 12 16.5c1.1 0 2.1.7 2.4 1.7.1.4.5.6.9.5.4-.1.6-.5.5-.9A4 4 0 0 0 12 15zm0-6a10 10 0 0 0-9.2 6.1c-.2.4 0 .8.4.9.4.2.8 0 .9-.4A8.5 8.5 0 0 1 12 10.5c3.8 0 7.2 2.5 8 5.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A10 10 0 0 0 12 9zm0-6a16 16 0 0 0-9.9 3.3c-.3.3-.3.8 0 1.1.3.3.8.3 1.1 0A14.5 14.5 0 0 1 12 4.5c6.5 0 12.3 4.2 13.5 10.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A16 16 0 0 0 12 3z"/>
         </svg>
     </div>`;
@@ -155,11 +158,13 @@ const getInfrastructureIcon = (L, type) => {
     let svgIcon = '';
     let size = [28, 28];
     let anchor = [14, 14];
+    let shadowStyle = '';
 
     if (type === 'odc') {
         // Purple ODC Box/Rack Cabinet style
+        shadowStyle = 'filter: drop-shadow(0 0 6px #8B5CF6);';
         svgIcon = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#8B5CF6" class="w-8 h-8 drop-shadow-md">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#8B5CF6" class="w-8 h-8" style="${shadowStyle}">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="#FFFFFF" stroke-width="2" />
             <line x1="3" y1="9" x2="21" y2="9" stroke="#FFFFFF" stroke-width="1.5" />
             <circle cx="12" cy="15" r="2.5" fill="#FFFFFF" />
@@ -167,9 +172,10 @@ const getInfrastructureIcon = (L, type) => {
         size = [32, 32];
         anchor = [16, 16];
     } else if (type === 'odp') {
-        // Blue ODP smaller Box style
+        // Blue ODP smaller Box style with cyan shadow glow!
+        shadowStyle = 'filter: drop-shadow(0 0 6px #00E5FF) drop-shadow(0 0 12px #00B0FF);';
         svgIcon = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#3B82F6" class="w-6 h-6 drop-shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#00E5FF" class="w-6 h-6" style="${shadowStyle}">
             <rect x="4" y="4" width="16" height="16" rx="2" ry="2" stroke="#FFFFFF" stroke-width="1.5" />
             <line x1="4" y1="10" x2="20" y2="10" stroke="#FFFFFF" stroke-width="1" />
             <circle cx="12" cy="14" r="1.5" fill="#FFFFFF" />
@@ -178,8 +184,9 @@ const getInfrastructureIcon = (L, type) => {
         anchor = [12, 12];
     } else if (type === 'tiang') {
         // Orange vertical pole line cap style
+        shadowStyle = 'filter: drop-shadow(0 0 5px #F97316);';
         svgIcon = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-8 drop-shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-8" style="${shadowStyle}">
             <line x1="12" y1="2" x2="12" y2="22" stroke="#F97316" stroke-width="4.5" stroke-linecap="round" />
             <circle cx="12" cy="3" r="3" fill="#FFFFFF" stroke="#F97316" stroke-width="1.5" />
         </svg>`;
@@ -187,8 +194,9 @@ const getInfrastructureIcon = (L, type) => {
         anchor = [10, 16];
     } else if (type === 'htb') {
         // Teal/Tosca HTB media converter diamond style
+        shadowStyle = 'filter: drop-shadow(0 0 5px #0D9488);';
         svgIcon = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#0D9488" class="w-6.5 h-6.5 drop-shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#0D9488" class="w-6.5 h-6.5" style="${shadowStyle}">
             <polygon points="12,2 22,12 12,22 2,12" stroke="#FFFFFF" stroke-width="1.5" />
             <circle cx="12" cy="12" r="2.5" fill="#FFFFFF" />
         </svg>`;
@@ -218,33 +226,88 @@ const drawMapElements = () => {
     mapCircles.value = [];
     mapLines.value = [];
 
-    // 1. Draw Fiber Cable Routes
+    // 1. Draw Fiber Cable Routes & ODP to Customer drop lines
     if (showCables.value) {
+        // Draw Fiber Routes
         props.fiberRoutes.forEach(route => {
             if (route.from_point && route.to_point) {
-                const line = leaflet.polyline(
+                // Double-layer neon green fiber route glow
+                const glowLine = leaflet.polyline(
                     [
                         [route.from_point.lat, route.from_point.lng],
                         [route.to_point.lat, route.to_point.lng]
                     ],
                     {
-                        color: '#22C55E', // Green dashed route
-                        weight: 3.5,
-                        opacity: 0.85,
-                        dashArray: '5, 10' // dashed
+                        color: '#10B981',
+                        weight: 8,
+                        opacity: 0.25,
+                        lineCap: 'round'
+                    }
+                ).addTo(map);
+                mapLines.value.push(glowLine);
+
+                const solidLine = leaflet.polyline(
+                    [
+                        [route.from_point.lat, route.from_point.lng],
+                        [route.to_point.lat, route.to_point.lng]
+                    ],
+                    {
+                        color: '#34D399',
+                        weight: 2.5,
+                        opacity: 0.95,
+                        dashArray: '6, 12',
+                        lineCap: 'round'
                     }
                 ).addTo(map);
 
                 // Add delete option on line click
                 if (props.canManage) {
-                    line.bindPopup(`
+                    solidLine.bindPopup(`
                         <div class="p-2">
                             <div class="font-semibold text-xs mb-2">Jalur Kabel: ${route.from_point.name} &rarr; ${route.to_point.name}</div>
                             <button onclick="window.deleteCable(${route.id})" class="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-bold">Hapus Jalur</button>
                         </div>
                     `);
                 }
-                mapLines.value.push(line);
+                solidLine.addTo(map);
+                mapLines.value.push(solidLine);
+            }
+        });
+
+        // Draw ODP-to-Customer drop lines (neon glow)
+        customersList.value.forEach(cust => {
+            if (cust.lat && cust.lng && cust.odp_id) {
+                const odp = props.networkPoints.find(p => p.id === cust.odp_id);
+                if (odp && odp.lat && odp.lng) {
+                    const glowLine = leaflet.polyline(
+                        [
+                            [cust.lat, cust.lng],
+                            [odp.lat, odp.lng]
+                        ],
+                        {
+                            color: '#00E5FF',
+                            weight: 6,
+                            opacity: 0.22,
+                            lineCap: 'round'
+                        }
+                    ).addTo(map);
+                    mapLines.value.push(glowLine);
+
+                    const solidLine = leaflet.polyline(
+                        [
+                            [cust.lat, cust.lng],
+                            [odp.lat, odp.lng]
+                        ],
+                        {
+                            color: '#00B0FF',
+                            weight: 1.5,
+                            opacity: 0.95,
+                            lineCap: 'round',
+                            dashArray: '3, 6'
+                        }
+                    ).addTo(map);
+                    mapLines.value.push(solidLine);
+                }
             }
         });
     }
@@ -419,7 +482,7 @@ onMounted(async () => {
 
     // Map Init (Kepanjen default center)
     map = leaflet.map('network-map-container', { doubleClickZoom: false }).setView([-8.130000, 112.570000], 14);
-    const tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    const tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 
     leaflet.tileLayer(tileUrl, {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -616,11 +679,11 @@ onUnmounted(() => {
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     
                     <!-- Controls Sidebar -->
-                    <div class="lg:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-6 h-fit">
+                    <div class="lg:col-span-1 bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-6 h-fit text-slate-100">
                         <div v-if="canManage">
                             <button
                                 @click="cableForm.reset(); isCableModalOpen = true;"
-                                class="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-sm transition shadow-sm flex items-center justify-center gap-2"
+                                class="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition shadow-md flex items-center justify-center gap-2"
                             >
                                 <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -630,71 +693,102 @@ onUnmounted(() => {
                         </div>
 
                         <div>
-                            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Filter Layers</h3>
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Filter Layers</h3>
                             <div class="space-y-3">
-                                <label class="flex items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                                    <input type="checkbox" v-model="showCustomers" @change="triggerRedraw" class="rounded border-gray-300 dark:border-gray-700 text-indigo-600 focus:ring-indigo-500" />
+                                <label class="flex items-center gap-2.5 text-xs font-bold text-slate-350 cursor-pointer hover:text-indigo-400 transition">
+                                    <input type="checkbox" v-model="showCustomers" @change="triggerRedraw" class="rounded border-slate-800 bg-slate-950 text-indigo-500 focus:ring-indigo-500" />
                                     Pelanggan (Online/Offline)
                                 </label>
-                                <label class="flex items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                                    <input type="checkbox" v-model="showInfrastructure" @change="triggerRedraw" class="rounded border-gray-300 dark:border-gray-700 text-indigo-600 focus:ring-indigo-500" />
+                                <label class="flex items-center gap-2.5 text-xs font-bold text-slate-350 cursor-pointer hover:text-indigo-400 transition">
+                                    <input type="checkbox" v-model="showInfrastructure" @change="triggerRedraw" class="rounded border-slate-800 bg-slate-950 text-indigo-500 focus:ring-indigo-500" />
                                     Infrastruktur (ODC/ODP/Tiang/HTB)
                                 </label>
-                                <label class="flex items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                                    <input type="checkbox" v-model="showRadius" @change="triggerRedraw" class="rounded border-gray-300 dark:border-gray-700 text-indigo-600 focus:ring-indigo-500" />
+                                <label class="flex items-center gap-2.5 text-xs font-bold text-slate-355 cursor-pointer hover:text-indigo-400 transition">
+                                    <input type="checkbox" v-model="showRadius" @change="triggerRedraw" class="rounded border-slate-800 bg-slate-950 text-indigo-500 focus:ring-indigo-500" />
                                     Radius Jangkauan Circle
                                 </label>
-                                <label class="flex items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                                    <input type="checkbox" v-model="showCables" @change="triggerRedraw" class="rounded border-gray-300 dark:border-gray-700 text-indigo-600 focus:ring-indigo-500" />
-                                    Jalur Kabel Fiber Optic
+                                <label class="flex items-center gap-2.5 text-xs font-bold text-slate-355 cursor-pointer hover:text-indigo-400 transition">
+                                    <input type="checkbox" v-model="showCables" @change="triggerRedraw" class="rounded border-slate-800 bg-slate-950 text-indigo-500 focus:ring-indigo-500" />
+                                    Jalur Kabel & Hubungan ODP
                                 </label>
                             </div>
                         </div>
 
-                        <div class="pt-4 border-t border-gray-100 dark:border-gray-700">
-                            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Legenda Peta</h3>
-                            <div class="space-y-2.5 text-xs text-gray-600 dark:text-gray-400">
-                                <div class="flex items-center gap-2.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#10B981" class="w-5 h-5"><path d="M12 21a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM12 15a4 4 0 0 0-3.8 2.8c-.1.4.1.8.5.9.4.1.8-.1.9-.5A2.5 2.5 0 0 1 12 16.5c1.1 0 2.1.7 2.4 1.7.1.4.5.6.9.5.4-.1.6-.5.5-.9A4 4 0 0 0 12 15zm0-6a10 10 0 0 0-9.2 6.1c-.2.4 0 .8.4.9.4.2.8 0 .9-.4A8.5 8.5 0 0 1 12 10.5c3.8 0 7.2 2.5 8 5.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A10 10 0 0 0 12 9zm0-6a16 16 0 0 0-9.9 3.3c-.3.3-.3.8 0 1.1.3.3.8.3 1.1 0A14.5 14.5 0 0 1 12 4.5c6.5 0 12.3 4.2 13.5 10.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A16 16 0 0 0 12 3z"/></svg>
-                                    <span>Pelanggan Online</span>
+                        <!-- ODP List Panel (Sidebar) -->
+                        <div class="pt-4 border-t border-slate-800/60">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
+                                    Daftar Box ODP
+                                </h3>
+                                <button
+                                    @click="fetchLiveMapStatus"
+                                    class="p-1.5 bg-slate-850 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/30 text-cyan-400 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm"
+                                    title="Refresh Status Realtime"
+                                >
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89H18" />
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div class="max-h-56 overflow-y-auto space-y-2 pr-1 select-none scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+                                <div
+                                    v-for="odp in props.networkPoints.filter(p => p.type === 'odp')"
+                                    :key="odp.id"
+                                    @click="map.setView([odp.lat, odp.lng], 17)"
+                                    class="p-2.5 bg-slate-950/60 border border-slate-800 hover:border-cyan-500/40 rounded-xl cursor-pointer transition flex justify-between items-center group"
+                                >
+                                    <div>
+                                        <div class="text-[11px] font-bold text-slate-200 group-hover:text-cyan-400 font-mono transition duration-150">{{ odp.name }}</div>
+                                        <div class="text-[8px] text-slate-500 font-mono">{{ odp.lat.toFixed(6) }}, {{ odp.lng.toFixed(6) }}</div>
+                                    </div>
+                                    <div class="text-[9px] font-extrabold text-cyan-400 bg-cyan-950/30 border border-cyan-500/10 px-2 py-0.5 rounded-md font-mono">
+                                        {{ odp.capacity || 8 }} Port
+                                    </div>
                                 </div>
-                                <div class="flex items-center gap-2.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#9CA3AF" class="w-5 h-5"><path d="M12 21a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM12 15a4 4 0 0 0-3.8 2.8c-.1.4.1.8.5.9.4.1.8-.1.9-.5A2.5 2.5 0 0 1 12 16.5c1.1 0 2.1.7 2.4 1.7.1.4.5.6.9.5.4-.1.6-.5.5-.9A4 4 0 0 0 12 15zm0-6a10 10 0 0 0-9.2 6.1c-.2.4 0 .8.4.9.4.2.8 0 .9-.4A8.5 8.5 0 0 1 12 10.5c3.8 0 7.2 2.5 8 5.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A10 10 0 0 0 12 9zm0-6a16 16 0 0 0-9.9 3.3c-.3.3-.3.8 0 1.1.3.3.8.3 1.1 0A14.5 14.5 0 0 1 12 4.5c6.5 0 12.3 4.2 13.5 10.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A16 16 0 0 0 12 3z"/></svg>
-                                    <span>Pelanggan Offline</span>
-                                </div>
-                                <div class="flex items-center gap-2.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#EF4444" class="w-5 h-5"><path d="M12 21a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM12 15a4 4 0 0 0-3.8 2.8c-.1.4.1.8.5.9.4.1.8-.1.9-.5A2.5 2.5 0 0 1 12 16.5c1.1 0 2.1.7 2.4 1.7.1.4.5.6.9.5.4-.1.6-.5.5-.9A4 4 0 0 0 12 15zm0-6a10 10 0 0 0-9.2 6.1c-.2.4 0 .8.4.9.4.2.8 0 .9-.4A8.5 8.5 0 0 1 12 10.5c3.8 0 7.2 2.5 8 5.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A10 10 0 0 0 12 9zm0-6a16 16 0 0 0-9.9 3.3c-.3.3-.3.8 0 1.1.3.3.8.3 1.1 0A14.5 14.5 0 0 1 12 4.5c6.5 0 12.3 4.2 13.5 10.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A16 16 0 0 0 12 3z"/></svg>
-                                    <span>Pelanggan Isolir</span>
-                                </div>
-                                <div class="flex items-center gap-2.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#8B5CF6" class="w-5 h-5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="#FFFFFF" stroke-width="2"/><line x1="3" y1="9" x2="21" y2="9" stroke="#FFFFFF" stroke-width="1.5"/><circle cx="12" cy="15" r="2.5" fill="#FFFFFF"/></svg>
-                                    <span>ODC (Distribution Box)</span>
-                                </div>
-                                <div class="flex items-center gap-2.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#3B82F6" class="w-5 h-5"><rect x="4" y="4" width="16" height="16" rx="2" ry="2" stroke="#FFFFFF" stroke-width="1.5"/><line x1="4" y1="10" x2="20" y2="10" stroke="#FFFFFF" stroke-width="1"/><circle cx="12" cy="14" r="1.5" fill="#FFFFFF"/></svg>
-                                    <span>ODP (Access Box)</span>
-                                </div>
-                                <div class="flex items-center gap-2.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5"><line x1="12" y1="2" x2="12" y2="22" stroke="#F97316" stroke-width="4.5" stroke-linecap="round"/><circle cx="12" cy="3" r="3" fill="#FFFFFF" stroke="#F97316" stroke-width="1.5"/></svg>
-                                    <span>Tiang Distribusi</span>
-                                </div>
-                                <div class="flex items-center gap-2.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#0D9488" class="w-5 h-5"><polygon points="12,2 22,12 12,22 2,12" stroke="#FFFFFF" stroke-width="1.5"/><circle cx="12" cy="12" r="2.5" fill="#FFFFFF"/></svg>
-                                    <span>HTB Converter</span>
+                                <div v-if="props.networkPoints.filter(p => p.type === 'odp').length === 0" class="text-center text-[10px] text-slate-500 py-4">
+                                    Tidak ada ODP terdaftar
                                 </div>
                             </div>
                         </div>
 
-                        <div class="pt-4 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-400">
-                            <svg class="h-4 w-4 inline mr-1 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div class="pt-4 border-t border-slate-800/60">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Legenda Peta</h3>
+                            <div class="space-y-2.5 text-[10px] text-slate-400 font-medium">
+                                <div class="flex items-center gap-2">
+                                    <div class="h-2.5 w-2.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#00e5ff]"></div>
+                                    <span>Pelanggan Online (Glowing Cyan)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="h-2.5 w-2.5 rounded-full bg-slate-550"></div>
+                                    <span>Pelanggan Offline</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="h-2.5 w-2.5 rounded-full bg-rose-500 shadow-[0_0_6px_#ef4444]"></div>
+                                    <span>Pelanggan Isolir (Glowing Red)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="h-2.5 w-2.5 rounded-sm bg-purple-500 shadow-[0_0_6px_#8b5cf6]"></div>
+                                    <span>ODC Box (Purple Glow)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="h-2.5 w-2.5 rounded-sm bg-cyan-450 shadow-[0_0_6px_#00e5ff]"></div>
+                                    <span>ODP Box (Cyan Glow)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-800/60 text-[10px] text-slate-500 leading-relaxed font-medium">
+                            <svg class="h-3.5 w-3.5 inline mr-1 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            Klik di area kosong peta untuk membuka popup penambahan titik infrastruktur atau pelanggan secara instan.
+                            Klik di area kosong peta untuk menambah ODP / Pelanggan secara instan.
                         </div>
                     </div>
 
                     <!-- Map Container -->
-                    <div class="lg:col-span-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-2 overflow-hidden h-[600px] relative">
+                    <div class="lg:col-span-3 bg-slate-900 border border-slate-800/80 rounded-2xl shadow-xl p-2 overflow-hidden h-[600px] relative">
                         <!-- Search Box Overlay Panel -->
                         <div class="absolute top-4 right-4 z-[1000] w-72 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md p-3 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 space-y-2">
                             <div class="flex gap-2">
