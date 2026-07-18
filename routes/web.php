@@ -241,38 +241,6 @@ Route::post('/deploy-webhook', function (\Illuminate\Http\Request $request) {
     ]);
 });
 
-Route::get('/debug-error', function() {
-    try {
-        $controller = new \App\Http\Controllers\Auth\AuthenticatedSessionController();
-        $res = $controller->create();
-        return "Success render! " . get_class($res);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'message' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-            'trace' => $e->getTraceAsString()
-        ]);
-    }
-});
-
-Route::get('/debug-session', function() {
-    $envPath = '/var/www/pakdoelnet/.env';
-    $exists = file_exists($envPath) ? 'yes' : 'no';
-    $writable = is_writable($envPath) ? 'yes' : 'no';
-    $owner = file_exists($envPath) ? fileowner($envPath) : 'unknown';
-    $perms = file_exists($envPath) ? substr(sprintf('%o', fileperms($envPath)), -4) : 'unknown';
-
-    return response()->json([
-        'session_driver' => config('session.driver'),
-        'cache_driver' => config('cache.default'),
-        'env_exists' => $exists,
-        'env_writable' => $writable,
-        'env_owner' => $owner,
-        'env_perms' => $perms,
-    ]);
-});
-
 Route::get('/debug-connection', function() {
     $routers = \App\Models\Router::all();
     $results = [];
