@@ -14,8 +14,14 @@ trait BelongsToTenant
     {
         // Add global query scope to filter by tenant_id of authenticated user
         static::addGlobalScope('tenant', function (Builder $builder) {
-            if (Auth::check() && Auth::user()->tenant_id) {
+            if (Auth::hasUser()) {
                 $builder->where($builder->getModel()->getTable() . '.tenant_id', Auth::user()->tenant_id);
+            } elseif ($builder->getModel() instanceof \App\Models\User) {
+                // Avoid infinite recursion when retrieving/authenticating the user
+            } else {
+                if (Auth::check() && Auth::user()->tenant_id) {
+                    $builder->where($builder->getModel()->getTable() . '.tenant_id', Auth::user()->tenant_id);
+                }
             }
         });
 
