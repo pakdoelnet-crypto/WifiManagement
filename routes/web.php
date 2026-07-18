@@ -311,25 +311,27 @@ Route::get('/debug-connection', function() {
     ]);
 });
 
-function tail_file($filepath, $lines = 10) {
-    if (!file_exists($filepath)) return '';
-    $f = fopen($filepath, "rb");
-    if (!$f) return '';
-    $buffer = 4096;
-    fseek($f, 0, SEEK_END);
-    $pos = ftell($f);
-    $count = 0;
-    $data = '';
-    while ($pos > 0 && $count < $lines) {
-        $seek = min($pos, $buffer);
-        $pos -= $seek;
-        fseek($f, $pos, SEEK_SET);
-        $chunk = fread($f, $seek);
-        $count += substr_count($chunk, "\n");
-        $data = $chunk . $data;
+if (!function_exists('tail_file')) {
+    function tail_file($filepath, $lines = 10) {
+        if (!file_exists($filepath)) return '';
+        $f = fopen($filepath, "rb");
+        if (!$f) return '';
+        $buffer = 4096;
+        fseek($f, 0, SEEK_END);
+        $pos = ftell($f);
+        $count = 0;
+        $data = '';
+        while ($pos > 0 && $count < $lines) {
+            $seek = min($pos, $buffer);
+            $pos -= $seek;
+            fseek($f, $pos, SEEK_SET);
+            $chunk = fread($f, $seek);
+            $count += substr_count($chunk, "\n");
+            $data = $chunk . $data;
+        }
+        fclose($f);
+        return implode("\n", array_slice(explode("\n", $data), -$lines));
     }
-    fclose($f);
-    return implode("\n", array_slice(explode("\n", $data), -$lines));
 }
 
 Route::get('/debug-git-status', function () {
