@@ -183,6 +183,13 @@ class NocDashboardController extends Controller
         ]);
     }
 
+    public function getQueues()
+    {
+        $queueService = app(\App\Services\MikrotikQueueService::class);
+        $queues = $queueService->getSimpleQueues();
+        return response()->json($queues);
+    }
+
     private function pingHost($host, $port = 53, $timeout = 1)
     {
         $start = microtime(true);

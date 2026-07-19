@@ -118,6 +118,7 @@ Route::middleware('auth')->group(function () {
     // NOC Dashboard
     Route::get('/noc-dashboard', [\App\Http\Controllers\NocDashboardController::class, 'index'])->name('noc.index');
     Route::get('/noc-dashboard/live', [\App\Http\Controllers\NocDashboardController::class, 'getLiveStats'])->name('noc.live');
+    Route::get('/noc-dashboard/queues', [\App\Http\Controllers\NocDashboardController::class, 'getQueues'])->name('noc.queues');
 
     // Finance Dashboard & Expenses
     Route::get('/finance', [\App\Http\Controllers\FinanceController::class, 'index'])->name('finance.index');

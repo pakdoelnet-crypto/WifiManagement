@@ -24,6 +24,8 @@ const props = defineProps({
 const onlineUsernamesList = ref([...props.onlineUsernames]);
 const customersList = ref([...props.customers]);
 
+const mapMode = ref(localStorage.getItem('network_map_mode') || 'dark');
+
 // Layer Toggles
 const showCustomers = ref(true);
 const showInfrastructure = ref(true);
@@ -113,32 +115,51 @@ const getCustomerIcon = (L, customer) => {
     let color = '#9CA3AF'; // grey offline
     let badgeColor = 'bg-gray-400';
     let pulseBg = '';
-    let shadowStyle = 'filter: drop-shadow(0 0 4px #9CA3AF);';
+    let shadowStyle = '';
+    let containerStyle = '';
 
-    if (customer.status === 'isolir' || customer.status === 'suspended') {
-        color = '#EF4444'; // red isolir
-        badgeColor = 'bg-red-500';
-        shadowStyle = 'filter: drop-shadow(0 0 6px #EF4444) drop-shadow(0 0 12px #EF4444);';
-    } else if (isOnline) {
-        color = '#00E5FF'; // cyan online glow!
-        badgeColor = 'bg-cyan-500';
-        pulseBg = 'bg-cyan-400';
-        shadowStyle = 'filter: drop-shadow(0 0 6px #00E5FF) drop-shadow(0 0 12px #00B0FF);';
+    if (mapMode.value === 'clean') {
+        // Mode CLEAN: solid warna biasa tanpa glow
+        if (customer.status === 'isolir' || customer.status === 'suspended') {
+            color = '#EF4444'; // solid red
+            badgeColor = 'bg-red-500';
+        } else if (isOnline) {
+            color = '#10B981'; // solid green
+            badgeColor = 'bg-emerald-500';
+        }
+    } else {
+        // Mode GELAP & HYBRID: neon glow
+        if (customer.status === 'isolir' || customer.status === 'suspended') {
+            color = '#EF4444'; // red isolir
+            badgeColor = 'bg-red-500';
+            shadowStyle = 'filter: drop-shadow(0 0 6px #EF4444) drop-shadow(0 0 12px #EF4444);';
+        } else if (isOnline) {
+            color = '#00E5FF'; // cyan online glow!
+            badgeColor = 'bg-cyan-500';
+            pulseBg = 'bg-cyan-400';
+            shadowStyle = 'filter: drop-shadow(0 0 6px #00E5FF) drop-shadow(0 0 12px #00B0FF);';
+        } else {
+            shadowStyle = 'filter: drop-shadow(0 0 4px #9CA3AF);';
+        }
+
+        if (mapMode.value === 'hybrid') {
+            // Mode HYBRID: tambahkan kontras background & outline putih di atas citra satelit
+            containerStyle = 'background: rgba(15, 23, 42, 0.6); border: 1.5px solid #FFFFFF; border-radius: 9999px; padding: 2px;';
+        }
     }
 
     // Live pulsing dot and outer ring if online
     const pulseElement = isOnline 
         ? `<span class="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
-               <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${pulseBg} opacity-75"></span>
+               <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${pulseBg || 'bg-emerald-400'} opacity-75"></span>
                <span class="relative inline-flex rounded-full h-2.5 w-2.5 ${badgeColor}"></span>
            </span>`
         : `<span class="absolute -top-0.5 -right-0.5 flex h-2 w-2">
                <span class="relative inline-flex rounded-full h-2 w-2 ${badgeColor}"></span>
            </span>`;
 
-    // SVG for a wifi client wrapped in custom responsive container
     const svgIcon = `
-    <div class="relative p-0.5 flex items-center justify-center">
+    <div class="relative p-0.5 flex items-center justify-center" style="${containerStyle}">
         ${pulseElement}
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" class="w-7 h-7" style="${shadowStyle}">
             <path d="M12 21a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM12 15a4 4 0 0 0-3.8 2.8c-.1.4.1.8.5.9.4.1.8-.1.9-.5A2.5 2.5 0 0 1 12 16.5c1.1 0 2.1.7 2.4 1.7.1.4.5.6.9.5.4-.1.6-.5.5-.9A4 4 0 0 0 12 15zm0-6a10 10 0 0 0-9.2 6.1c-.2.4 0 .8.4.9.4.2.8 0 .9-.4A8.5 8.5 0 0 1 12 10.5c3.8 0 7.2 2.5 8 5.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A10 10 0 0 0 12 9zm0-6a16 16 0 0 0-9.9 3.3c-.3.3-.3.8 0 1.1.3.3.8.3 1.1 0A14.5 14.5 0 0 1 12 4.5c6.5 0 12.3 4.2 13.5 10.1.1.4.5.6.9.5.4-.1.6-.5.5-.9A16 16 0 0 0 12 3z"/>
@@ -148,9 +169,9 @@ const getCustomerIcon = (L, customer) => {
     return L.divIcon({
         className: 'custom-customer-icon',
         html: svgIcon,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-        popupAnchor: [0, -16]
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -18]
     });
 };
 
@@ -159,54 +180,95 @@ const getInfrastructureIcon = (L, type) => {
     let size = [28, 28];
     let anchor = [14, 14];
     let shadowStyle = '';
+    let containerStyle = '';
 
-    if (type === 'odc') {
-        // Purple ODC Box/Rack Cabinet style
-        shadowStyle = 'filter: drop-shadow(0 0 6px #8B5CF6);';
-        svgIcon = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#8B5CF6" class="w-8 h-8" style="${shadowStyle}">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="#FFFFFF" stroke-width="2" />
-            <line x1="3" y1="9" x2="21" y2="9" stroke="#FFFFFF" stroke-width="1.5" />
-            <circle cx="12" cy="15" r="2.5" fill="#FFFFFF" />
-        </svg>`;
-        size = [32, 32];
-        anchor = [16, 16];
-    } else if (type === 'odp') {
-        // Blue ODP smaller Box style with cyan shadow glow!
-        shadowStyle = 'filter: drop-shadow(0 0 6px #00E5FF) drop-shadow(0 0 12px #00B0FF);';
-        svgIcon = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#00E5FF" class="w-6 h-6" style="${shadowStyle}">
-            <rect x="4" y="4" width="16" height="16" rx="2" ry="2" stroke="#FFFFFF" stroke-width="1.5" />
-            <line x1="4" y1="10" x2="20" y2="10" stroke="#FFFFFF" stroke-width="1" />
-            <circle cx="12" cy="14" r="1.5" fill="#FFFFFF" />
-        </svg>`;
-        size = [24, 24];
-        anchor = [12, 12];
-    } else if (type === 'tiang') {
-        // Orange vertical pole line cap style
-        shadowStyle = 'filter: drop-shadow(0 0 5px #F97316);';
-        svgIcon = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-8" style="${shadowStyle}">
-            <line x1="12" y1="2" x2="12" y2="22" stroke="#F97316" stroke-width="4.5" stroke-linecap="round" />
-            <circle cx="12" cy="3" r="3" fill="#FFFFFF" stroke="#F97316" stroke-width="1.5" />
-        </svg>`;
-        size = [20, 32];
-        anchor = [10, 16];
-    } else if (type === 'htb') {
-        // Teal/Tosca HTB media converter diamond style
-        shadowStyle = 'filter: drop-shadow(0 0 5px #0D9488);';
-        svgIcon = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#0D9488" class="w-6.5 h-6.5" style="${shadowStyle}">
-            <polygon points="12,2 22,12 12,22 2,12" stroke="#FFFFFF" stroke-width="1.5" />
-            <circle cx="12" cy="12" r="2.5" fill="#FFFFFF" />
-        </svg>`;
-        size = [26, 26];
-        anchor = [13, 13];
+    if (mapMode.value === 'hybrid') {
+        containerStyle = 'background: rgba(15, 23, 42, 0.65); border: 1.5px solid #FFFFFF; border-radius: 6px; padding: 2px;';
+    }
+
+    if (mapMode.value === 'clean') {
+        // Mode CLEAN: solid biasa tanpa drop-shadow
+        if (type === 'odc') {
+            svgIcon = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#8B5CF6" class="w-8 h-8">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="#FFFFFF" stroke-width="2" />
+                <line x1="3" y1="9" x2="21" y2="9" stroke="#FFFFFF" stroke-width="1.5" />
+                <circle cx="12" cy="15" r="2.5" fill="#FFFFFF" />
+            </svg>`;
+            size = [32, 32];
+            anchor = [16, 16];
+        } else if (type === 'odp') {
+            svgIcon = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#3B82F6" class="w-6 h-6">
+                <rect x="4" y="4" width="16" height="16" rx="2" ry="2" stroke="#FFFFFF" stroke-width="1.5" />
+                <line x1="4" y1="10" x2="20" y2="10" stroke="#FFFFFF" stroke-width="1" />
+                <circle cx="12" cy="14" r="1.5" fill="#FFFFFF" />
+            </svg>`;
+            size = [24, 24];
+            anchor = [12, 12];
+        } else if (type === 'tiang') {
+            svgIcon = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-8">
+                <line x1="12" y1="2" x2="12" y2="22" stroke="#F97316" stroke-width="4.5" stroke-linecap="round" />
+                <circle cx="12" cy="3" r="3" fill="#FFFFFF" stroke="#F97316" stroke-width="1.5" />
+            </svg>`;
+            size = [20, 32];
+            anchor = [10, 16];
+        } else if (type === 'htb') {
+            svgIcon = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#0D9488" class="w-6.5 h-6.5">
+                <polygon points="12,2 22,12 12,22 2,12" stroke="#FFFFFF" stroke-width="1.5" />
+                <circle cx="12" cy="12" r="2.5" fill="#FFFFFF" />
+            </svg>`;
+            size = [26, 26];
+            anchor = [13, 13];
+        }
+    } else {
+        // Mode GELAP & HYBRID: neon glow
+        if (type === 'odc') {
+            shadowStyle = 'filter: drop-shadow(0 0 6px #8B5CF6);';
+            svgIcon = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#8B5CF6" class="w-8 h-8" style="${shadowStyle}">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="#FFFFFF" stroke-width="2" />
+                <line x1="3" y1="9" x2="21" y2="9" stroke="#FFFFFF" stroke-width="1.5" />
+                <circle cx="12" cy="15" r="2.5" fill="#FFFFFF" />
+            </svg>`;
+            size = [32, 32];
+            anchor = [16, 16];
+        } else if (type === 'odp') {
+            shadowStyle = 'filter: drop-shadow(0 0 6px #00E5FF) drop-shadow(0 0 12px #00B0FF);';
+            svgIcon = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#00E5FF" class="w-6 h-6" style="${shadowStyle}">
+                <rect x="4" y="4" width="16" height="16" rx="2" ry="2" stroke="#FFFFFF" stroke-width="1.5" />
+                <line x1="4" y1="10" x2="20" y2="10" stroke="#FFFFFF" stroke-width="1" />
+                <circle cx="12" cy="14" r="1.5" fill="#FFFFFF" />
+            </svg>`;
+            size = [24, 24];
+            anchor = [12, 12];
+        } else if (type === 'tiang') {
+            shadowStyle = 'filter: drop-shadow(0 0 5px #F97316);';
+            svgIcon = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-8" style="${shadowStyle}">
+                <line x1="12" y1="2" x2="12" y2="22" stroke="#F97316" stroke-width="4.5" stroke-linecap="round" />
+                <circle cx="12" cy="3" r="3" fill="#FFFFFF" stroke="#F97316" stroke-width="1.5" />
+            </svg>`;
+            size = [20, 32];
+            anchor = [10, 16];
+        } else if (type === 'htb') {
+            shadowStyle = 'filter: drop-shadow(0 0 5px #0D9488);';
+            svgIcon = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#0D9488" class="w-6.5 h-6.5" style="${shadowStyle}">
+                <polygon points="12,2 22,12 12,22 2,12" stroke="#FFFFFF" stroke-width="1.5" />
+                <circle cx="12" cy="12" r="2.5" fill="#FFFFFF" />
+            </svg>`;
+            size = [26, 26];
+            anchor = [13, 13];
+        }
     }
 
     return L.divIcon({
         className: `custom-infra-${type}-icon`,
-        html: `<div class="flex items-center justify-center">${svgIcon}</div>`,
+        html: `<div class="flex items-center justify-center" style="${containerStyle}">${svgIcon}</div>`,
         iconSize: size,
         iconAnchor: anchor,
         popupAnchor: [0, -anchor[1]]
@@ -231,63 +293,42 @@ const drawMapElements = () => {
         // Draw Fiber Routes
         props.fiberRoutes.forEach(route => {
             if (route.from_point && route.to_point) {
-                // Double-layer neon green fiber route glow
-                const glowLine = leaflet.polyline(
-                    [
-                        [route.from_point.lat, route.from_point.lng],
-                        [route.to_point.lat, route.to_point.lng]
-                    ],
-                    {
-                        color: '#10B981',
-                        weight: 8,
-                        opacity: 0.25,
-                        lineCap: 'round'
-                    }
-                ).addTo(map);
-                mapLines.value.push(glowLine);
-
-                const solidLine = leaflet.polyline(
-                    [
-                        [route.from_point.lat, route.from_point.lng],
-                        [route.to_point.lat, route.to_point.lng]
-                    ],
-                    {
-                        color: '#34D399',
-                        weight: 2.5,
-                        opacity: 0.95,
-                        dashArray: '6, 12',
-                        lineCap: 'round'
-                    }
-                ).addTo(map);
-
-                // Add delete option on line click
-                if (props.canManage) {
-                    solidLine.bindPopup(`
-                        <div class="p-2">
-                            <div class="font-semibold text-xs mb-2">Jalur Kabel: ${route.from_point.name} &rarr; ${route.to_point.name}</div>
-                            <button onclick="window.deleteCable(${route.id})" class="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-bold">Hapus Jalur</button>
-                        </div>
-                    `);
-                }
-                solidLine.addTo(map);
-                mapLines.value.push(solidLine);
-            }
-        });
-
-        // Draw ODP-to-Customer drop lines (neon glow)
-        customersList.value.forEach(cust => {
-            if (cust.lat && cust.lng && cust.odp_id) {
-                const odp = props.networkPoints.find(p => p.id === cust.odp_id);
-                if (odp && odp.lat && odp.lng) {
-                    const glowLine = leaflet.polyline(
+                if (mapMode.value === 'clean') {
+                    // Clean mode: single clean solid-dashed line, no glow
+                    const solidLine = leaflet.polyline(
                         [
-                            [cust.lat, cust.lng],
-                            [odp.lat, odp.lng]
+                            [route.from_point.lat, route.from_point.lng],
+                            [route.to_point.lat, route.to_point.lng]
                         ],
                         {
-                            color: '#00E5FF',
-                            weight: 6,
-                            opacity: 0.22,
+                            color: '#10B981',
+                            weight: 3.5,
+                            opacity: 0.85,
+                            dashArray: '5, 10',
+                            lineCap: 'round'
+                        }
+                    ).addTo(map);
+
+                    if (props.canManage) {
+                        solidLine.bindPopup(`
+                            <div class="p-2">
+                                <div class="font-semibold text-xs mb-2">Jalur Kabel: ${route.from_point.name} &rarr; ${route.to_point.name}</div>
+                                <button onclick="window.deleteCable(${route.id})" class="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-bold">Hapus Jalur</button>
+                            </div>
+                        `);
+                    }
+                    mapLines.value.push(solidLine);
+                } else {
+                    // Double-layer neon green fiber route glow (Dark & Hybrid)
+                    const glowLine = leaflet.polyline(
+                        [
+                            [route.from_point.lat, route.from_point.lng],
+                            [route.to_point.lat, route.to_point.lng]
+                        ],
+                        {
+                            color: '#10B981',
+                            weight: 8,
+                            opacity: 0.25,
                             lineCap: 'round'
                         }
                     ).addTo(map);
@@ -295,18 +336,84 @@ const drawMapElements = () => {
 
                     const solidLine = leaflet.polyline(
                         [
-                            [cust.lat, cust.lng],
-                            [odp.lat, odp.lng]
+                            [route.from_point.lat, route.from_point.lng],
+                            [route.to_point.lat, route.to_point.lng]
                         ],
                         {
-                            color: '#00B0FF',
-                            weight: 1.5,
+                            color: '#34D399',
+                            weight: 2.5,
                             opacity: 0.95,
-                            lineCap: 'round',
-                            dashArray: '3, 6'
+                            dashArray: '6, 12',
+                            lineCap: 'round'
                         }
                     ).addTo(map);
+
+                    if (props.canManage) {
+                        solidLine.bindPopup(`
+                            <div class="p-2">
+                                <div class="font-semibold text-xs mb-2">Jalur Kabel: ${route.from_point.name} &rarr; ${route.to_point.name}</div>
+                                <button onclick="window.deleteCable(${route.id})" class="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-bold">Hapus Jalur</button>
+                            </div>
+                        `);
+                    }
+                    solidLine.addTo(map);
                     mapLines.value.push(solidLine);
+                }
+            }
+        });
+
+        // Draw ODP-to-Customer drop lines
+        customersList.value.forEach(cust => {
+            if (cust.lat && cust.lng && cust.odp_id) {
+                const odp = props.networkPoints.find(p => p.id === cust.odp_id);
+                if (odp && odp.lat && odp.lng) {
+                    if (mapMode.value === 'clean') {
+                        // Clean mode: simple solid blue line
+                        const solidLine = leaflet.polyline(
+                            [
+                                [cust.lat, cust.lng],
+                                [odp.lat, odp.lng]
+                            ],
+                            {
+                                color: '#3B82F6',
+                                weight: 2,
+                                opacity: 0.7,
+                                dashArray: '4, 8',
+                                lineCap: 'round'
+                            }
+                        ).addTo(map);
+                        mapLines.value.push(solidLine);
+                    } else {
+                        // Dark & Hybrid modes: neon blue glow lines
+                        const glowLine = leaflet.polyline(
+                            [
+                                [cust.lat, cust.lng],
+                                [odp.lat, odp.lng]
+                            ],
+                            {
+                                color: '#00E5FF',
+                                weight: 6,
+                                opacity: 0.22,
+                                lineCap: 'round'
+                            }
+                        ).addTo(map);
+                        mapLines.value.push(glowLine);
+
+                        const solidLine = leaflet.polyline(
+                            [
+                                [cust.lat, cust.lng],
+                                [odp.lat, odp.lng]
+                            ],
+                            {
+                                color: '#00B0FF',
+                                weight: 1.5,
+                                opacity: 0.95,
+                                lineCap: 'round',
+                                dashArray: '3, 6'
+                            }
+                        ).addTo(map);
+                        mapLines.value.push(solidLine);
+                    }
                 }
             }
         });
@@ -406,6 +513,53 @@ const drawMapElements = () => {
     }
 };
 
+let activeTileLayers = [];
+
+const initMapTileLayer = (mode) => {
+    if (!map || !leaflet) return;
+
+    // Remove existing tile layers
+    activeTileLayers.forEach(layer => map.removeLayer(layer));
+    activeTileLayers = [];
+
+    // Add new tile layers based on mode
+    if (mode === 'dark') {
+        const darkLayer = leaflet.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+        darkLayer.addTo(map);
+        activeTileLayers.push(darkLayer);
+    } else if (mode === 'hybrid') {
+        const baseLayer = leaflet.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri',
+            maxZoom: 19
+        });
+        const labelLayer = leaflet.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19
+        });
+        baseLayer.addTo(map);
+        labelLayer.addTo(map);
+        activeTileLayers.push(baseLayer, labelLayer);
+    } else if (mode === 'clean') {
+        const cleanLayer = leaflet.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+        cleanLayer.addTo(map);
+        activeTileLayers.push(cleanLayer);
+    }
+};
+
+const changeMapMode = (mode) => {
+    mapMode.value = mode;
+    localStorage.setItem('network_map_mode', mode);
+    initMapTileLayer(mode);
+    triggerRedraw();
+};
+
 let searchTimeout = null;
 const handleSearchInput = () => {
     clearTimeout(searchTimeout);
@@ -482,13 +636,7 @@ onMounted(async () => {
 
     // Map Init (Kepanjen default center)
     map = leaflet.map('network-map-container', { doubleClickZoom: false }).setView([-8.130000, 112.570000], 14);
-    const tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-
-    leaflet.tileLayer(tileUrl, {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 20
-    }).addTo(map);
+    initMapTileLayer(mapMode.value);
 
     // Auto-fit Bounds if coordinates exist
     const bounds = [];
@@ -829,6 +977,34 @@ onUnmounted(() => {
                                 </svg>
                                 Mencari lokasi...
                             </div>
+                        </div>
+
+                        <!-- Map Mode Switcher Pill Control -->
+                        <div class="absolute top-4 left-4 z-[1000] flex gap-1.5 bg-slate-950/80 border border-slate-800 p-1 rounded-full shadow-lg backdrop-blur-md">
+                            <button
+                                type="button"
+                                @click="changeMapMode('dark')"
+                                :class="mapMode === 'dark' ? 'bg-amber-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-slate-200'"
+                                class="px-3.5 py-1 text-[9px] font-extrabold uppercase rounded-full tracking-wider transition-all duration-200"
+                            >
+                                Gelap
+                            </button>
+                            <button
+                                type="button"
+                                @click="changeMapMode('hybrid')"
+                                :class="mapMode === 'hybrid' ? 'bg-amber-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-slate-200'"
+                                class="px-3.5 py-1 text-[9px] font-extrabold uppercase rounded-full tracking-wider transition-all duration-200"
+                            >
+                                Hybrid
+                            </button>
+                            <button
+                                type="button"
+                                @click="changeMapMode('clean')"
+                                :class="mapMode === 'clean' ? 'bg-amber-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-slate-200'"
+                                class="px-3.5 py-1 text-[9px] font-extrabold uppercase rounded-full tracking-wider transition-all duration-200"
+                            >
+                                Clean
+                            </button>
                         </div>
 
                         <div id="network-map-container" class="w-full h-full rounded-lg z-10"></div>

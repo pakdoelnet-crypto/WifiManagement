@@ -63,34 +63,7 @@ const olts = ref([
     }
 ]);
 
-// HTB Queues Mock Data (Bagian 3)
-const htbQueues = ref([
-    { name: 'PPPoE_Sujito_10M', current_tx: 8.4, current_rx: 1.2, max_limit_tx: 10.0, max_limit_rx: 10.0, burst_limit: '15M/15M', status: 'aktif', usage: 84 },
-    { name: 'PPPoE_Budi_5M', current_tx: 4.9, current_rx: 0.8, max_limit_tx: 5.0, max_limit_rx: 5.0, burst_limit: 'N/A', status: 'terpotong', usage: 98 },
-    { name: 'PPPoE_Utami_15M', current_tx: 3.2, current_rx: 0.5, max_limit_tx: 15.0, max_limit_rx: 15.0, burst_limit: '20M/20M', status: 'aktif', usage: 21 },
-    { name: 'PPPoE_Dodi_8M', current_tx: 0.0, current_rx: 0.0, max_limit_tx: 8.0, max_limit_rx: 8.0, burst_limit: 'N/A', status: 'idle', usage: 0 },
-    { name: 'ODP-MANGIR-01_Uplink', current_tx: 38.2, current_rx: 8.5, max_limit_tx: 100.0, max_limit_rx: 100.0, burst_limit: 'N/A', status: 'aktif', usage: 38 }
-]);
-
 const animateMockData = () => {
-    // Dynamic updates for HTB simple queues
-    htbQueues.value.forEach(q => {
-        if (q.status === 'aktif' || q.status === 'terpotong') {
-            const maxVal = q.max_limit_tx;
-            let current = q.current_tx + (Math.random() * 1.6 - 0.8);
-            if (current < 0.2) current = 0.2;
-            if (current > maxVal * 1.05) current = maxVal * 1.05;
-            q.current_tx = parseFloat(current.toFixed(1));
-            q.current_rx = parseFloat((current * 0.12 + Math.random() * 0.15).toFixed(1));
-            q.usage = Math.round((q.current_tx / maxVal) * 100);
-            if (q.usage > 90) {
-                q.status = 'terpotong'; // Throttled / Near Limit
-            } else {
-                q.status = 'aktif';
-            }
-        }
-    });
-
     // Fluctuate OLT online rates slightly
     olts.value.forEach(olt => {
         const delta = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
@@ -103,17 +76,37 @@ const animateMockData = () => {
     });
 };
 
+// Realtime HTB Queue integration (Bagian 3)
+const htbQueues = ref([]);
+const isRefreshingQueues = ref(false);
+
+const fetchLiveQueues = async () => {
+    isRefreshingQueues.value = true;
+    try {
+        const response = await axios.get(route('noc.queues'));
+        htbQueues.value = response.data;
+    } catch (e) {
+        console.error('Failed to poll HTB queues:', e);
+    } finally {
+        isRefreshingQueues.value = false;
+    }
+};
+
 let intervalId = null;
 let mockIntervalId = null;
+let queueIntervalId = null;
 
 onMounted(() => {
+    fetchLiveQueues();
     intervalId = setInterval(fetchLiveStats, 30000);
     mockIntervalId = setInterval(animateMockData, 2000);
+    queueIntervalId = setInterval(fetchLiveQueues, 8000); // refresh queue status every 8 seconds
 });
 
 onUnmounted(() => {
     if (intervalId) clearInterval(intervalId);
     if (mockIntervalId) clearInterval(mockIntervalId);
+    if (queueIntervalId) clearInterval(queueIntervalId);
 });
 </script>
 
@@ -359,6 +352,16 @@ onUnmounted(() => {
                             </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[460px] overflow-y-auto pr-1">
+                                <div v-if="htbQueues.length === 0" class="col-span-2 text-center text-slate-500 py-12">
+                                    <div v-if="isRefreshingQueues" class="flex flex-col items-center justify-center gap-2.5">
+                                        <svg class="animate-spin h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span class="text-xs font-bold font-mono text-slate-400 tracking-wider">MENGHUBUNGKAN KE MIKROTIK API & TUNNEL...</span>
+                                    </div>
+                                    <span v-else class="text-xs font-bold font-mono tracking-wider">TIDAK ADA DATA ANTREAN QUEUE. PASTIKAN KONEKSI ROUTER AKTIF.</span>
+                                </div>
                                 <div v-for="q in htbQueues" :key="q.name" class="p-4 bg-slate-950/70 border border-slate-800/80 rounded-xl hover:border-indigo-500/20 transition duration-200">
                                     <!-- Queue Header -->
                                     <div class="flex justify-between items-start mb-2">
