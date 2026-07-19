@@ -1298,6 +1298,11 @@ onUnmounted(() => {
 </template>
 
 <style>
+/* Push Leaflet top-left controls down below map mode switcher */
+.leaflet-top.leaflet-left {
+    margin-top: 54px !important;
+}
+
 .odp-label-tooltip {
     background-color: rgba(17, 24, 39, 0.9) !important;
     border: 1px solid rgba(75, 85, 99, 0.5) !important;
