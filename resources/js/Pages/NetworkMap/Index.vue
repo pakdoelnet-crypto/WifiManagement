@@ -634,9 +634,30 @@ onMounted(async () => {
     leaflet = await loadLeaflet();
     await nextTick();
 
-    // Map Init (Kepanjen default center)
-    map = leaflet.map('network-map-container', { doubleClickZoom: false }).setView([-8.130000, 112.570000], 14);
+    // Map Init (Kepanjen default center) - disable default zoomControl
+    map = leaflet.map('network-map-container', { 
+        doubleClickZoom: false,
+        zoomControl: false
+    }).setView([-8.130000, 112.570000], 14);
+
     initMapTileLayer(mapMode.value);
+
+    // Create custom zoom control and add to map
+    const zoomControl = leaflet.control.zoom();
+    zoomControl.addTo(map);
+
+    // Relocate Leaflet zoom control DOM element inside our custom flex layout wrapper
+    const zoomContainer = zoomControl.getContainer();
+    const customZoomWrapper = document.getElementById('custom-zoom-control-container');
+    if (customZoomWrapper && zoomContainer) {
+        customZoomWrapper.appendChild(zoomContainer);
+    }
+
+    // Prevent clicks/double clicks on the controls container from bubble-triggering map click popups
+    const controlsContainer = document.getElementById('custom-map-controls-container');
+    if (controlsContainer) {
+        leaflet.DomEvent.disableClickPropagation(controlsContainer);
+    }
 
     // Auto-fit Bounds if coordinates exist
     const bounds = [];
@@ -979,32 +1000,38 @@ onUnmounted(() => {
                             </div>
                         </div>
 
-                        <!-- Map Mode Switcher Pill Control -->
-                        <div class="absolute top-4 left-4 z-[1000] flex gap-1.5 bg-slate-950/80 border border-slate-800 p-1 rounded-full shadow-lg backdrop-blur-md">
-                            <button
-                                type="button"
-                                @click="changeMapMode('dark')"
-                                :class="mapMode === 'dark' ? 'bg-amber-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-slate-200'"
-                                class="px-3.5 py-1 text-[9px] font-extrabold uppercase rounded-full tracking-wider transition-all duration-200"
-                            >
-                                Gelap
-                            </button>
-                            <button
-                                type="button"
-                                @click="changeMapMode('hybrid')"
-                                :class="mapMode === 'hybrid' ? 'bg-amber-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-slate-200'"
-                                class="px-3.5 py-1 text-[9px] font-extrabold uppercase rounded-full tracking-wider transition-all duration-200"
-                            >
-                                Hybrid
-                            </button>
-                            <button
-                                type="button"
-                                @click="changeMapMode('clean')"
-                                :class="mapMode === 'clean' ? 'bg-amber-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-slate-200'"
-                                class="px-3.5 py-1 text-[9px] font-extrabold uppercase rounded-full tracking-wider transition-all duration-200"
-                            >
-                                Clean
-                            </button>
+                        <!-- Top Left Controls Container (Switcher + Zoom) -->
+                        <div id="custom-map-controls-container" class="absolute top-4 left-4 z-[1000] flex flex-col gap-4 items-start">
+                            <!-- Map Mode Switcher Pill Control -->
+                            <div class="flex gap-1.5 bg-slate-950/80 border border-slate-800 p-1 rounded-full shadow-lg backdrop-blur-md">
+                                <button
+                                    type="button"
+                                    @click="changeMapMode('dark')"
+                                    :class="mapMode === 'dark' ? 'bg-amber-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-slate-200'"
+                                    class="px-3.5 py-1 text-[9px] font-extrabold uppercase rounded-full tracking-wider transition-all duration-200"
+                                >
+                                    Gelap
+                                </button>
+                                <button
+                                    type="button"
+                                    @click="changeMapMode('hybrid')"
+                                    :class="mapMode === 'hybrid' ? 'bg-amber-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-slate-200'"
+                                    class="px-3.5 py-1 text-[9px] font-extrabold uppercase rounded-full tracking-wider transition-all duration-200"
+                                >
+                                    Hybrid
+                                </button>
+                                <button
+                                    type="button"
+                                    @click="changeMapMode('clean')"
+                                    :class="mapMode === 'clean' ? 'bg-amber-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-slate-200'"
+                                    class="px-3.5 py-1 text-[9px] font-extrabold uppercase rounded-full tracking-wider transition-all duration-200"
+                                >
+                                    Clean
+                                </button>
+                            </div>
+
+                            <!-- Custom Wrapper for Zoom Control -->
+                            <div id="custom-zoom-control-container"></div>
                         </div>
 
                         <div id="network-map-container" class="w-full h-full rounded-lg z-10"></div>
@@ -1298,10 +1325,42 @@ onUnmounted(() => {
 </template>
 
 <style>
-/* Push Leaflet top-left controls down below map mode switcher with clear spacing and alignment */
-.leaflet-top.leaflet-left {
-    top: 48px !important;
-    left: -2px !important;
+/* Custom Leaflet Zoom Control Explicit Styling (Flex Center, Solid Colors, Border Box) */
+.leaflet-bar {
+    border: none !important;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+    margin: 0 !important; /* reset default margin since it sits inside custom flex wrapper */
+}
+
+.leaflet-bar a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    line-height: normal !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    color: #1e293b !important; /* Dark Slate text color */
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    transition: all 0.2s ease !important;
+}
+
+.leaflet-bar a:first-child {
+    border-top-left-radius: 6px !important;
+    border-top-right-radius: 6px !important;
+    border-bottom: none !important;
+}
+
+.leaflet-bar a:last-child {
+    border-bottom-left-radius: 6px !important;
+    border-bottom-right-radius: 6px !important;
+}
+
+.leaflet-bar a:hover {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
 }
 
 .odp-label-tooltip {
