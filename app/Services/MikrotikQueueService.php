@@ -12,22 +12,34 @@ class MikrotikQueueService
     /**
      * Get a configured and connected RouterOS client instance.
      */
-    public function getClient(): Client
+    public function getClient(?Router $router = null): Client
     {
-        // 1. Try reading from env first
-        $host = env('MIKROTIK_HOST');
-        $port = env('MIKROTIK_PORT');
-        $username = env('MIKROTIK_USERNAME');
-        $password = env('MIKROTIK_PASSWORD');
+        $host = null;
+        $port = null;
+        $username = null;
+        $password = null;
 
-        // 2. If env not fully configured, fall back to the first active Router in DB
-        if (empty($host) || empty($username)) {
-            $router = Router::where('is_active', true)->first();
-            if ($router) {
-                $host = $router->host;
-                $port = $router->port;
-                $username = $router->username;
-                $password = $router->password;
+        if ($router) {
+            $host = $router->host;
+            $port = $router->port;
+            $username = $router->username;
+            $password = $router->password;
+        } else {
+            // 1. Try reading from env first
+            $host = env('MIKROTIK_HOST');
+            $port = env('MIKROTIK_PORT');
+            $username = env('MIKROTIK_USERNAME');
+            $password = env('MIKROTIK_PASSWORD');
+
+            // 2. If env not fully configured, fall back to the first active Router in DB
+            if (empty($host) || empty($username)) {
+                $dbRouter = Router::where('is_active', true)->first();
+                if ($dbRouter) {
+                    $host = $dbRouter->host;
+                    $port = $dbRouter->port;
+                    $username = $dbRouter->username;
+                    $password = $dbRouter->password;
+                }
             }
         }
 
@@ -47,10 +59,10 @@ class MikrotikQueueService
     /**
      * Fetch simple queues from Mikrotik Router.
      */
-    public function getSimpleQueues(): array
+    public function getSimpleQueues(?Router $router = null): array
     {
         try {
-            $client = $this->getClient();
+            $client = $this->getClient($router);
             $response = $client->query('/queue/simple/print')->read();
 
             if (!is_array($response)) {

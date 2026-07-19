@@ -11,4 +11,5 @@ use Illuminate\Support\Facades\Schedule;
 use App\Jobs\SyncPppActiveSessions;
 
 Schedule::job(new SyncPppActiveSessions)->everyTenSeconds();
+Schedule::command('queue:log-traffic')->everyMinute();
 Schedule::command('billing:isolate-unpaid')->daily();
